@@ -1,0 +1,56 @@
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - dashboard-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=security_dashboard
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - JWT_SECRET_KEY=your-super-secret-key-change-this-in-production
+      - PASSWORD_SALT=your-salt-change-this-in-production
+    depends_on:
+      - db
+    networks:
+      - dashboard-net
+
+  db:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=security_dashboard
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dashboard-net
+
+networks:
+  dashboard-net:
+volumes:
+  postgres_data:
