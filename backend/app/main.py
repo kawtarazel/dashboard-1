@@ -7,6 +7,7 @@ from typing import List
 from jose import JWTError, jwt
 from fastapi import Form, Security
 from fastapi.security import HTTPAuthorizationCredentials
+from fastapi import Body
 
 # Utility to get current user and check admin
 from fastapi import Request
@@ -222,13 +223,37 @@ def create_admin():
 def logout():
     return {"message": "Logged out. Please remove tokens on client."}
 
-# Admin: List all users
-@app.get("/api/admin/users", response_model=List[schemas.User])
+
+# Admin: List all users with roles and permissions
+@app.get("/api/admin/users")
 def list_users(db: Session = Depends(get_db), admin: models.User = Depends(get_admin_user)):
     try:
         users = db.query(models.User).all()
-        logging.info(f"Fetched {users} users from the database.")
-        return users
+        result = []
+        for user in users:
+            roles = [{"id": r.id, "name": r.name} for r in user.roles]
+            # Collect permissions from roles and direct user permissions if any
+            permissions_set = set()
+            # Permissions from roles
+            for role in user.roles:
+                for perm in role.permissions:
+                    permissions_set.add((perm.id, perm.name))
+            # If you have direct user permissions, add them here as well
+            # for perm in user.permissions:
+            #     permissions_set.add((perm.id, perm.name))
+            permissions = [{"id": pid, "name": pname} for pid, pname in permissions_set]
+            result.append({
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "is_active": user.is_active,
+                "is_superuser": user.is_superuser,
+                "is_verified": user.is_verified,
+                "roles": roles,
+                "permissions": permissions
+            })
+        logging.info(f"Fetched {len(result)} users from the database.")
+        return result
     finally:
         logging.info("Fetched all users successfully.")
         db.close()
@@ -307,3 +332,113 @@ def get_permissions(db: Session = Depends(get_db)):
 @app.get("/api/auth/me", response_model=schemas.User)
 def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+@app.post("/api/users/{user_id}/roles")
+async def assign_roles_to_user(
+    user_id: int,
+    role_ids: dict = Body(..., example={"role_ids": [1, 2]}),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    roles = db.query(models.Role).filter(models.Role.id.in_(role_ids["role_ids"])).all()
+    if len(roles) != len(role_ids["role_ids"]):
+        raise HTTPException(status_code=400, detail="Some roles were not found")
+    
+    user.roles.extend([role for role in roles if role not in user.roles])
+    db.commit()
+    return {"message": "Roles assigned successfully"}
+
+@app.delete("/api/users/{user_id}/roles")
+async def remove_roles_from_user(
+    user_id: int,
+    role_ids: dict = Body(..., example={"role_ids": [1, 2]}),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    roles = db.query(models.Role).filter(models.Role.id.in_(role_ids["role_ids"])).all()
+    if len(roles) != len(role_ids["role_ids"]):
+        raise HTTPException(status_code=400, detail="Some roles were not found")
+    
+    for role in roles:
+        if role in user.roles:
+            user.roles.remove(role)
+    
+    db.commit()
+    return {"message": "Roles removed successfully"}
+
+@app.post("/api/roles/{role_id}/permissions")
+async def assign_permissions_to_role(
+    role_id: int,
+    permission_ids: dict = Body(..., example={"permission_ids": [1, 2]}),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    role = db.query(models.Role).filter(models.Role.id == role_id).first()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    permissions = db.query(models.Permission).filter(models.Permission.id.in_(permission_ids["permission_ids"])).all()
+    if len(permissions) != len(permission_ids["permission_ids"]):
+        raise HTTPException(status_code=400, detail="Some permissions were not found")
+    
+    role.permissions.extend([perm for perm in permissions if perm not in role.permissions])
+    db.commit()
+    return {"message": "Permissions assigned successfully"}
+
+@app.delete("/api/roles/{role_id}/permissions")
+async def remove_permissions_from_role(
+    role_id: int,
+    permission_ids: dict = Body(..., example={"permission_ids": [1, 2]}),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    role = db.query(models.Role).filter(models.Role.id == role_id).first()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    permissions = db.query(models.Permission).filter(models.Permission.id.in_(permission_ids["permission_ids"])).all()
+    if len(permissions) != len(permission_ids["permission_ids"]):
+        raise HTTPException(status_code=400, detail="Some permissions were not found")
+    
+    for permission in permissions:
+        if permission in role.permissions:
+            role.permissions.remove(permission)
+    
+    db.commit()
+    return {"message": "Permissions removed successfully"}
+
+@app.get("/api/users/{user_id}/roles")
+async def get_user_roles(
+    user_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Users can see their own roles, superusers can see anyone's roles
+    if not current_user.is_superuser and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view other user's roles")
+    
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"roles": [{"id": role.id, "name": role.name} for role in user.roles]}
+
+@app.get("/api/roles/{role_id}/permissions")
+async def get_role_permissions(
+    role_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    role = db.query(models.Role).filter(models.Role.id == role_id).first()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    
+    return {"permissions": [{"id": perm.id, "name": perm.name} for perm in role.permissions]}

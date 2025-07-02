@@ -26,8 +26,8 @@ interface User {
   is_active: boolean;
   is_superuser: boolean;
   is_verified: boolean;
-//   roles: { id: number; name: string }[];
-//   permissions: { id: number; name: string }[];
+  roles: { id: number; name: string }[];
+  permissions: { id: number; name: string }[];
 }
 
 const AdminDashboard: React.FC = () => {
@@ -81,6 +81,7 @@ const AdminDashboard: React.FC = () => {
                   <TableCell>Username</TableCell>
                   <TableCell>Verified</TableCell>
                   <TableCell>Superuser</TableCell>
+                  <TableCell>Roles</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -103,18 +104,18 @@ const AdminDashboard: React.FC = () => {
                         <Chip label="User" color="default" size="small" />
                       )}
                     </TableCell>
-                    {/* <TableCell>
+                    <TableCell>
                       {user.roles.map((role) => (
                         <Chip key={role.id} label={role.name} size="small" sx={{ mr: 0.5 }} />
                       ))}
-                    </TableCell> */}
+                    </TableCell>
                     <TableCell>
-                      {/* <RolePermissionManager
+                      <RolePermissionManager
                         userId={user.id}
                         userRoles={user.roles}
                         userPermissions={user.permissions}
                         onChange={fetchUsers}
-                      /> */}
+                      />
                       <Tooltip title="Delete User">
                         <IconButton onClick={() => handleDelete(user.id)} color="error" size="small">
                           <DeleteIcon />

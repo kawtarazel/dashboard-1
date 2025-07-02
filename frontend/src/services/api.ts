@@ -98,6 +98,47 @@ export const authApi = {
         const response = await api.get('/api/auth/me');
         return response.data;
     },
+
+    // Role management
+    assignRolesToUser: async (userId: number, roleIds: number[]) => {
+        const response = await api.post(`/api/users/${userId}/roles`, {
+            role_ids: roleIds
+        });
+        return response.data;
+    },
+
+    removeRolesFromUser: async (userId: number, roleIds: number[]) => {
+        const response = await api.delete(`/api/users/${userId}/roles`, {
+            data: { role_ids: roleIds }
+        });
+        return response.data;
+    },
+
+    // Permission management
+    assignPermissionsToRole: async (roleId: number, permissionIds: number[]) => {
+        const response = await api.post(`/api/roles/${roleId}/permissions`, {
+            permission_ids: permissionIds
+        });
+        return response.data;
+    },
+
+    removePermissionsFromRole: async (roleId: number, permissionIds: number[]) => {
+        const response = await api.delete(`/api/roles/${roleId}/permissions`, {
+            data: { permission_ids: permissionIds }
+        });
+        return response.data;
+    },
+
+    // Get user's roles and permissions
+    getUserRoles: async (userId: number) => {
+        const response = await api.get(`/api/users/${userId}/roles`);
+        return response.data;
+    },
+
+    getRolePermissions: async (roleId: number) => {
+        const response = await api.get(`/api/roles/${roleId}/permissions`);
+        return response.data;
+    },
 };
 
 export default api;

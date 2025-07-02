@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../services/api';
+import { authApi } from '../../services/api';
 import { Box, Chip, Button, MenuItem, Select, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
 
@@ -26,31 +26,32 @@ const RolePermissionManager: React.FC<Props> = ({ userId, userRoles, userPermiss
   const [selectedPermission, setSelectedPermission] = useState('');
 
   useEffect(() => {
-    api.get('/api/roles').then(res => setRoles(res.data));
-    api.get('/api/permissions').then(res => setPermissions(res.data));
+    authApi.getRoles().then(data => setRoles(data));
+    authApi.getPermissions().then(data => setPermissions(data));
   }, []);
 
   const handleAddRole = async () => {
     if (!selectedRole) return;
-    await api.post(`/api/admin/users/${userId}/roles/${selectedRole}`);
+    await authApi.assignRolesToUser(userId, [Number(selectedRole)]);
     toast.success('Role added');
     setSelectedRole('');
     onChange();
   };
   const handleRemoveRole = async (roleId: number) => {
-    await api.delete(`/api/admin/users/${userId}/roles/${roleId}`);
+    await authApi.removeRolesFromUser(userId, [roleId]);
     toast.success('Role removed');
     onChange();
   };
   const handleAddPermission = async () => {
-    if (!selectedPermission) return;
-    await api.post(`/api/admin/users/${userId}/permissions/${selectedPermission}`);
+    if (!selectedPermission || !selectedRole) return;
+    await authApi.assignPermissionsToRole(Number(selectedRole), [Number(selectedPermission)]);
     toast.success('Permission added');
     setSelectedPermission('');
     onChange();
   };
   const handleRemovePermission = async (permId: number) => {
-    await api.delete(`/api/admin/users/${userId}/permissions/${permId}`);
+    if (!selectedRole) return;
+    await authApi.removePermissionsFromRole(Number(selectedRole), [permId]);
     toast.success('Permission removed');
     onChange();
   };
