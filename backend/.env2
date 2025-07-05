@@ -1,0 +1,10 @@
+# Database Settings
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "password"
+POSTGRES_HOST = "localhost"
+POSTGRES_PORT = "5433"
+POSTGRES_DB = "cybrsens_dashboard"
+
+# Security Settings
+CORS_ORIGINS = ["http://localhost:5173"]  
+PASSWORD_SALT = "your-salt-change-this-in-production"

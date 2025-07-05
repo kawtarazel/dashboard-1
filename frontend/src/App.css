@@ -1,0 +1,40 @@
+* {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.title {
+  font-size: var(--title-size);
+  font-weight: var(--font-weight-bold);
+  color: var(--brand-color);
+}
+
+.button {
+  background-color: var(--button-background-color);
+  color: var(--button-text-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.card {
+  background-color: var(--card-background-color);
+  border: 1px solid var(--card-border-color);
+  box-shadow: 0 2px 4px var(--card-shadow-color);
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+/* liquid glass effect on cards */
+.liquid-glass {
+  backdrop-filter: blur(10px);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

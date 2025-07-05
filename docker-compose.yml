@@ -1,0 +1,80 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - dashboard-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      # Configuration pour la DB d'authentification
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cybrsens_auth
+      - POSTGRES_HOST=cybrsens_auth
+      - POSTGRES_PORT=5432
+      # Configuration pour la DB dashboard (si nécessaire)
+      - POSTGRES_DASHBOARD_USER=postgres
+      - POSTGRES_DASHBOARD_PASSWORD=password
+      - POSTGRES_DASHBOARD_DB=cybrsens_dashboard
+      - POSTGRES_DASHBOARD_HOST=cybrsens_dashboard
+      - POSTGRES_DASHBOARD_PORT=5432
+      # Secrets
+      - JWT_SECRET_KEY=your-super-secret-key-change-this-in-production
+      - PASSWORD_SALT=your-salt-change-this-in-production
+    depends_on:
+      - cybrsens_auth
+      - cybrsens_dashboard
+    networks:
+      - dashboard-net
+
+  cybrsens_auth:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cybrsens_auth
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - dashboard-net
+
+  cybrsens_dashboard:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cybrsens_dashboard
+    volumes:
+      - postgres_dashboard_data:/var/lib/postgresql/data
+    networks:
+      - dashboard-net
+
+networks:
+  dashboard-net:
+    driver: bridge
+
+volumes:
+  postgres_auth_data:
+  postgres_dashboard_data:

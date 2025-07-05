@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+    --brand-color: hsl(210, 100%, 50%);
+    --brand-color-light: hsl(210, 100%, 70%);
+    --brand-color-dark: hsl(210, 100%, 30%);
+    --text-color: hsl(210, 10%, 20%);
+    --text-color-light: hsl(210, 10%, 50%);
+    --text-color-dark: hsl(210, 10%, 0%);
+    --background-color: hsl(210, 100%, 98%);
+    --border-color: hsl(210, 10%, 90%);
+    --hover-color: hsl(210, 100%, 90%);
+    --button-color: hsl(210, 100%, 50%);
+    --button-color-light: hsl(210, 100%, 70%);
+    --button-color-dark: hsl(210, 100%, 30%);
+    --button-text-color: hsl(210, 10%, 20%);
+    --button-text-color-light: hsl(210, 10%, 50%);
+    --button-text-color-dark: hsl(210, 10%, 80%);
+    --input-border-color: hsl(210, 10%, 80%);
+    --input-border-color-dark: hsl(210, 10%, 40%);
+    --input-background-color: hsl(210, 100%, 98%);
+    --input-background-color-dark: hsl(210, 100%, 20%);
+    --input-text-color: hsl(210, 10%, 20%);
+    --input-text-color-dark: hsl(210, 10%, 80%);
+    --card-background-color: hsl(210, 100%, 98%);
+    --card-background-color-dark: hsl(210, 100%, 20%); 
+    --card-border-color: hsl(210, 10%, 90%);
+    --card-border-color-dark: hsl(210, 10%, 30%);
+    --card-shadow-color: rgba(0, 0, 0, 0.1);
+    --card-shadow-color-dark: rgba(0, 0, 0, 0.3);
+    --link-color: hsl(210, 100%, 50%);
+    --link-color-light: hsl(210, 100%, 70%);
+    --link-color-dark: hsl(210, 100%, 30%);
+    --link-hover-color: hsl(210, 100%, 60%);
+    --link-hover-color-light: hsl(210, 100%, 80%);
+    --link-hover-color-dark: hsl(210, 100%, 40%);
+    --alert-success-background: hsl(120, 100%, 90%);
+    --alert-success-text: hsl(120, 100%, 30%);
+    --alert-error-background: hsl(0, 100%, 90%);
+    --alert-error-text: hsl(0, 100%, 30%);
+    --alert-warning-background: hsl(60, 100%, 90%);
+    --alert-warning-text: hsl(60, 100%, 30%);
+    --alert-info-background: hsl(210, 100%, 90%);
+    --alert-info-text: hsl(210, 100%, 30%);
+    --tooltip-background: hsl(210, 100%, 98%);
+    --tooltip-text: hsl(210, 10%, 20%);
+    --tooltip-border: hsl(210, 10%, 80%);
+    --tooltip-background-dark: hsl(210, 100%, 20%);
+    --tooltip-text-dark: hsl(210, 10%, 80%);
+    --tooltip-border-dark: hsl(210, 10%, 40%);
+    --modal-background: rgba(0, 0, 0, 0.5);
+    --modal-content-background: hsl(210, 100%, 98%);
+    --modal-content-background-dark: hsl(210, 100%, 20%);
+    --modal-content-text: hsl(210, 10%, 20%);
+    --modal-content-text-dark: hsl(210, 10%, 80%);
+    --modal-content-border: hsl(210, 10%, 90%);
+    --modal-content-border-dark: hsl(210, 10%, 30%);
+    --skeleton-background: hsl(210, 100%, 90%);
+    --skeleton-background-dark: hsl(210, 100%, 30%);
+    --skeleton-animation: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.2) 100%);
+    --skeleton-animation-dark: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.2) 100%);
+    --skeleton-animation-duration: 1.5s;
+    --skeleton-animation-timing: infinite;
+    --skeleton-animation-delay: 0.5s;
+    --skeleton-animation-iteration: 1;
+    --skeleton-animation-direction: alternate;
+    --skeleton-animation-fill-mode: forwards;
+    --skeleton-animation-play-state: running;
+    --skeleton-animation-name: skeleton-loading;
+
+    --title-size: 1.5rem; /* 24px */
+    --important-text-size: 1.25rem; /* 20px */
+    --normal-text-size: 1rem; /* 16px */
+    --small-text-size: 0.75rem; /* 12px */
+
+    --font-weight-bold: 700; /* Bold */
+    --font-weight-normal: 400; /* Normal */
+    --font-weight-light: 200; /* Light */
+
+    --spacing-xs: 0.25rem; /* 4px */
+    --spacing-sm: 0.5rem; /* 8px */
+    --spacing-md: 1rem; /* 16px */
+    --spacing-lg: 1.5rem; /* 24px */
+    --spacing-xl: 2rem; /* 32px */
+    --spacing-2xl: 3rem; /* 48px */
+}
+
+[data-theme='dark'] {
+    --background-color: hsl(210, 100%, 20%);
+    --text-color: hsl(210, 10%, 80%);
+    --text-color-light: hsl(210, 10%, 50%);
+    --text-color-dark: hsl(210, 10%, 98%);
+    --border-color: hsl(210, 10%, 30%);
+    --hover-color: hsl(210, 100%, 30%);
+    
+}
+

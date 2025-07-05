@@ -1,0 +1,78 @@
+import React, { useState } from 'react';
+import { LayoutGrid , Settings, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
+
+function DashboardSidebar() {
+  const [activeItem, setActiveItem] = useState('Overview');
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const menuItems = [
+    {
+      id: 'Overview',
+      label: 'Overview',
+      icon: LayoutGrid ,
+      active: true
+    },
+    {
+      id: 'Settings',
+      label: 'Settings',
+      icon: Settings,
+      active: false
+    },
+    {
+      id: 'Sources',
+      label: 'Sources',
+      icon: Globe,
+      active: false
+    }
+  ];
+  const handleItemClick = (itemId) => {
+    setActiveItem(itemId);
+  };
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  return (
+    <div className={`relative bg-gray-50 border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-48'} h-screen`}>
+      {/* Navigation Items */}
+      <div className="py-4">
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+          const isActive = activeItem === item.id;
+          
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleItemClick(item.id)}
+              className={`w-full flex items-center px-4 py-3 text-left transition-colors ${
+                isActive
+                  ? 'bg-blue-50 text-blue-600 border-r-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <IconComponent className={`w-5 h-5 ${isCollapsed ? 'mx-auto' : 'mr-3'}`} />
+              {!isCollapsed && (
+                <span className="text-sm font-medium">{item.label}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Collapse/Expand Button */}
+      <button
+        onClick={toggleSidebar}
+        className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded-full p-1 hover:bg-gray-50 transition-colors"
+      >
+        {isCollapsed ? (
+          <ChevronRight className="w-4 h-4 text-gray-600" />
+        ) : (
+          <ChevronLeft className="w-4 h-4 text-gray-600" />
+        )}
+      </button>
+    </div>
+  );
+}
+
+export default DashboardSidebar;
