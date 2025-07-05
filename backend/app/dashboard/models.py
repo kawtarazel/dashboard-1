@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Float, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -26,7 +26,7 @@ class KPIValue(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     kpi_id = Column(Integer, ForeignKey("kpis.id"), nullable=False)
-    value = Column(String, nullable=False)
+    value = Column(Float, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     kpi = relationship("KPI", back_populates="values")

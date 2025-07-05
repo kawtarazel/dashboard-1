@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean
 
 class UserBase(BaseModel):
     email: EmailStr

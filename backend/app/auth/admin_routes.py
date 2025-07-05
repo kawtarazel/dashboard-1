@@ -7,13 +7,10 @@ from . import models
 
 from .database import engine, get_db
 from . import security
-from .config import settings
+from ..core.config import settings
 import logging
 
 logging.basicConfig(level=logging.INFO)
-
-# Create database tables
-# models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -41,24 +38,6 @@ def get_admin_user(current_user: models.User = Depends(get_current_user)):
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return current_user
-
-# Ensure admin exists at startup
-@router.on_event("startup")
-def create_admin():
-    db = next(get_db())
-    admin = db.query(models.User).filter(models.User.email == "admin@admin.com").first()
-    if not admin:
-        admin = models.User(
-            email="admin@admin.com",
-            username="admin",
-            hashed_password=security.get_password_hash("admin123"),
-            is_superuser=True,
-            is_active=True,
-            is_verified=True,
-            role_id=1
-        )
-        db.add(admin)
-        db.commit()
 
 # Admin: List all users with role and permissions
 @router.get("/users")

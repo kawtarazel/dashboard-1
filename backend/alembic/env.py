@@ -17,11 +17,13 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 from backend.app.auth.models import Base  # <-- add this
-from backend.app.auth.config import settings # <-- add this
+from backend.app.core.config import settings # <-- add this
 target_metadata = Base.metadata
 
+import os
 def get_url():
-    return f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+    db_name = os.environ.get("ALEMBIC_DB_NAME", settings.AUTH_POSTGRES_DB)
+    return f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{db_name}"
 
 config.set_main_option("sqlalchemy.url", get_url())
 

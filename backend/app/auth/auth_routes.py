@@ -1,38 +1,43 @@
-from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, HTTPException, Depends, status, Request
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from typing import List
 from jose import JWTError, jwt
-from fastapi import Form, Security
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi import Form
 from fastapi import Body
-
-# Utility to get current user and check admin
-from fastapi import Request
-
 from . import models, schemas
-
 from .database import engine, get_db
 from . import security
-from .config import settings
+from ..core.config import settings
+from email.mime.text import MIMEText
 import uuid
-# Initialize logging
+import smtplib
 import logging
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
+
 
 logging.basicConfig(level=logging.INFO)
+
+# Rate limiter instance
+limiter = Limiter(key_func=get_remote_address)
+
+def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many login attempts. Please try again later."}
+    )
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter(tags=["auth"])
+router.middleware('http')(limiter.middleware)
+router.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-from email.mime.text import MIMEText
-import smtplib
-from .config import settings
 
 def send_verification_email(email: str, token: str):
     link = f"http://localhost:8000/api/auth/verify-email?token={token}"  # Replace domain in prod
@@ -96,7 +101,9 @@ def verify_email(token: str, db: Session = Depends(get_db)):
     return {"message": "Email verified successfully!"}
 
 @router.post("/auth/token", response_model=schemas.Token)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
     db: Session = Depends(get_db)
@@ -232,7 +239,7 @@ async def assign_role_to_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    role = db.query(models.Role).filter(models.Role == role_id).all()
+    role = db.query(models.Role).filter(models.Role.id == role_id).first()
     if not role:
         raise HTTPException(status_code=400, detail="Role not found")
     logging.info(f"Assigning role {role} to user {user.username}")
