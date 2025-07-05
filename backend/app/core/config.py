@@ -1,19 +1,25 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    # Database Settings
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_HOST: str
-    POSTGRES_PORT: str
+    # AUTH Database Settings
+    AUTH_POSTGRES_HOST: str
+    AUTH_POSTGRES_PORT: str
+    AUTH_POSTGRES_USER: str
+    AUTH_POSTGRES_PASSWORD: str
     AUTH_POSTGRES_DB: str
+    
+    # DASHBOARD Database Settings  
+    DASHBOARD_POSTGRES_HOST: str
+    DASHBOARD_POSTGRES_PORT: str
+    DASHBOARD_POSTGRES_USER: str
+    DASHBOARD_POSTGRES_PASSWORD: str
     DASHBOARD_POSTGRES_DB: str
     
     # JWT Settings
     JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_DAYS: int
     
     # SMTP Settings
     SMTP_HOST: str
@@ -22,7 +28,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str
     
     # Security
-    CORS_ORIGINS: list = ["http://localhost:5173"]
+    CORS_ORIGINS: list
     PASSWORD_SALT: str
     
     class Config:

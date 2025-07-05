@@ -9,7 +9,7 @@ from sqlalchemy.exc import OperationalError
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.DASHBOARD_POSTGRES_DB}"
+SQLALCHEMY_DATABASE_URL = f"postgresql://{settings.DASHBOARD_POSTGRES_USER}:{settings.DASHBOARD_POSTGRES_PASSWORD}@{settings.DASHBOARD_POSTGRES_HOST}:{settings.DASHBOARD_POSTGRES_PORT}/{settings.DASHBOARD_POSTGRES_DB}"
 
 def wait_for_db(max_retries=30, retry_interval=2):
     """Attendre que la base de données soit disponible"""

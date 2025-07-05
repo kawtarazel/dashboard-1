@@ -3,13 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import schemas
 from ..auth import models
-from . import models as dashboard_models
-from .database import get_db, engine
+from .database import get_db
 from ..auth.admin_routes import get_current_user
-
-# Crée les tables dashboard dans la bonne base au démarrage du module
-if __name__ == "__main__":
-    dashboard_models.Base.metadata.create_all(bind=engine)
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 @router.get("/kpis", response_model=list[schemas.KPI])

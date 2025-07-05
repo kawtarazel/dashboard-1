@@ -5,9 +5,6 @@ Revises: 0a346c300c79
 Create Date: 2025-07-05
 """
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.sql import table, column
-from sqlalchemy import String, Integer, DateTime, func
 
 # revision identifiers, used by Alembic.
 revision = 'insert_default_permissions_roles'

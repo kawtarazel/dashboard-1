@@ -5,7 +5,7 @@ from jose import JWTError, jwt
 
 from . import models
 
-from .database import engine, get_db
+from .database import get_db
 from . import security
 from ..core.config import settings
 import logging

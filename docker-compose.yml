@@ -1,4 +1,97 @@
 services:
+  cybrsens_auth:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${AUTH_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${AUTH_POSTGRES_DB}
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cybrsens_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - dashboard-net
+    restart: unless-stopped
+
+  cybrsens_dashboard:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${DASHBOARD_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DASHBOARD_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DASHBOARD_POSTGRES_DB}
+    volumes:
+      - postgres_dashboard_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cybrsens_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - dashboard-net
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    environment:
+      - AUTH_POSTGRES_HOST=${AUTH_POSTGRES_HOST}
+      - AUTH_POSTGRES_PORT=${AUTH_POSTGRES_PORT}
+      - AUTH_POSTGRES_USER=${AUTH_POSTGRES_USER}
+      - AUTH_POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
+      - AUTH_POSTGRES_DB=${AUTH_POSTGRES_DB}
+
+      - DASHBOARD_POSTGRES_HOST=${DASHBOARD_POSTGRES_HOST}
+      - DASHBOARD_POSTGRES_PORT=${DASHBOARD_POSTGRES_PORT}
+      - DASHBOARD_POSTGRES_USER=${DASHBOARD_POSTGRES_USER}
+      - DASHBOARD_POSTGRES_PASSWORD=${DASHBOARD_POSTGRES_PASSWORD}
+      - DASHBOARD_POSTGRES_DB=${DASHBOARD_POSTGRES_DB}
+
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS}
+      
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - PASSWORD_SALT=${PASSWORD_SALT}
+    depends_on:
+      cybrsens_auth:
+        condition: service_healthy
+      cybrsens_dashboard:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - dashboard-net
+  
   frontend:
     build:
       context: ./frontend
@@ -11,63 +104,14 @@ services:
     environment:
       - VITE_API_URL=http://localhost:8000
     depends_on:
-      - backend
-    networks:
-      - dashboard-net
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-    environment:
-      # Configuration pour la DB d'authentification
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=cybrsens_auth
-      - POSTGRES_HOST=cybrsens_auth
-      - POSTGRES_PORT=5432
-      # Configuration pour la DB dashboard (si nécessaire)
-      - POSTGRES_DASHBOARD_USER=postgres
-      - POSTGRES_DASHBOARD_PASSWORD=password
-      - POSTGRES_DASHBOARD_DB=cybrsens_dashboard
-      - POSTGRES_DASHBOARD_HOST=cybrsens_dashboard
-      - POSTGRES_DASHBOARD_PORT=5432
-      # Secrets
-      - JWT_SECRET_KEY=your-super-secret-key-change-this-in-production
-      - PASSWORD_SALT=your-salt-change-this-in-production
-    depends_on:
-      - cybrsens_auth
-      - cybrsens_dashboard
-    networks:
-      - dashboard-net
-
-  cybrsens_auth:
-    image: timescale/timescaledb:latest-pg14
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=cybrsens_auth
-    volumes:
-      - postgres_auth_data:/var/lib/postgresql/data
-    networks:
-      - dashboard-net
-
-  cybrsens_dashboard:
-    image: timescale/timescaledb:latest-pg14
-    ports:
-      - "5433:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=cybrsens_dashboard
-    volumes:
-      - postgres_dashboard_data:/var/lib/postgresql/data
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
     networks:
       - dashboard-net
 
