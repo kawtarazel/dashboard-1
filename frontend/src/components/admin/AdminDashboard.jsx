@@ -46,20 +46,16 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Autocomplete from '@mui/material/Autocomplete';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({setSwitch}) => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [popoverPerms, setPopoverPerms] = useState([]);
   const [permDialogOpen, setPermDialogOpen] = useState(false);
   const [permDialogUser, setPermDialogUser] = useState(null);
   const [allPermissions, setAllPermissions] = useState([]);
   const [selectedPerms, setSelectedPerms] = useState([]);
-  const [activeDashboard, setActiveDashboard] = useState('users');
 
   const fetchUsers = async () => {
     try {
@@ -67,8 +63,6 @@ const AdminDashboard = () => {
       setUsers(res.data);
     } catch (err) {
       toast.error('Failed to fetch users');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -119,17 +113,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     authApi.getPermissions().then(setAllPermissions);
   }, []);
-
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Skeleton variant="text" width={300} height={50} />
-          <Skeleton variant="rectangular" width="100%" height={400} sx={{ mt: 2 }} />
-        </Box>
-      </Container>
-    );
-  }
 
   const statsCards = [
     {
@@ -189,7 +172,7 @@ const AdminDashboard = () => {
             <Button
               variant="contained"
               startIcon={<LogoutIcon />}
-              onClick={() => {navigate('/dashboard');}}
+              onClick={() => {setSwitch(false)}}
               sx={{
                 background: 'rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(10px)',

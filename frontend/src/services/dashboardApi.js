@@ -75,7 +75,9 @@ export const dashboardApi = {
 
   // Create new tool
   createTool: async (toolData) => {
+    console.log('Creating tool with data:', toolData);
     const response = await api.post('/api/dashboard/tools', toolData);
+    console.log('Tool created:', response);
     return response.data;
   },
 

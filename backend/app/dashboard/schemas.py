@@ -56,23 +56,23 @@ class ToolBase(BaseModel):
     @field_validator('category')
     def validate_category(cls, v):
         allowed_categories = [
-            'firewall', 'antivirus', 'vulnerability_scanner', 
-            'waf', 'ids_ips', 'siem', 'endpoint_protection', 
-            'network_monitoring', 'log_analysis', 'other'
+            'data', 'IAM', 'IAC', 
+            'perimeter', 'monitoring_response', 'GOR'
         ]
-        if v.lower() not in allowed_categories:
+        if v not in allowed_categories:
             raise ValueError(f'Category must be one of: {", ".join(allowed_categories)}')
-        return v.lower()
+        return v
 
     @field_validator('type')
     def validate_type(cls, v):
         allowed_types = [
-            'hardware', 'software', 'cloud_service', 
-            'saas', 'on_premise', 'hybrid'
+            'firewall', 'antivirus', 'vulnerability_scanner', 
+            'waf', 'ids_ips', 'siem', 'endpoint_protection', 
+            'network_monitoring', 'log_analysis', 'other'
         ]
-        if v.lower() not in allowed_types:
+        if v not in allowed_types:
             raise ValueError(f'Type must be one of: {", ".join(allowed_types)}')
-        return v.lower()
+        return v
 
 class ToolCreate(ToolBase):
     pass

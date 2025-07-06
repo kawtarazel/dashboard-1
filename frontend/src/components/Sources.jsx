@@ -308,6 +308,8 @@ function ToolForm({ tool, onSave, onCancel, open }) {
         e.preventDefault();
         setLoading(true);
 
+        console.log('Submitting form data:', formData);
+
         try {
             if (tool?.id) {
                 await dashboardApi.updateTool(tool.id, formData);
@@ -378,16 +380,12 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                     onChange={handleChange('category')}
                                     label="Category"
                                 >
-                                    <MenuItem value="firewall">Firewall</MenuItem>
-                                    <MenuItem value="antivirus">Antivirus</MenuItem>
-                                    <MenuItem value="vulnerability_scanner">Vulnerability Scanner</MenuItem>
-                                    <MenuItem value="waf">WAF</MenuItem>
-                                    <MenuItem value="ids_ips">IDS/IPS</MenuItem>
-                                    <MenuItem value="siem">SIEM</MenuItem>
-                                    <MenuItem value="endpoint_protection">Endpoint Protection</MenuItem>
-                                    <MenuItem value="network_monitoring">Network Monitoring</MenuItem>
-                                    <MenuItem value="log_analysis">Log Analysis</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
+                                    <MenuItem value="data">Data Security</MenuItem>
+                                    <MenuItem value="IAM">Identity, Access, and Mobility Security</MenuItem>
+                                    <MenuItem value="IAC">Infrastructure, Application, and Continuity Security</MenuItem>
+                                    <MenuItem value="perimeter">Perimeter Security</MenuItem>
+                                    <MenuItem value="monitoring_response">Security Monitoring and Incident Response</MenuItem>
+                                    <MenuItem value="GOR">Security Governance, Organization, and Resources</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -399,12 +397,16 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                     onChange={handleChange('type')}
                                     label="Type"
                                 >
-                                    <MenuItem value="hardware">Hardware</MenuItem>
-                                    <MenuItem value="software">Software</MenuItem>
-                                    <MenuItem value="cloud_service">Cloud Service</MenuItem>
-                                    <MenuItem value="saas">SaaS</MenuItem>
-                                    <MenuItem value="on_premise">On-Premise</MenuItem>
-                                    <MenuItem value="hybrid">Hybrid</MenuItem>
+                                    <MenuItem value="firewall">Firewall</MenuItem>
+                                    <MenuItem value="antivirus">Antivirus</MenuItem>
+                                    <MenuItem value="vulnerability_scanner">Vulnerability Scanner</MenuItem>
+                                    <MenuItem value="waf">WAF</MenuItem>
+                                    <MenuItem value="ids_ips">IDS/IPS</MenuItem>
+                                    <MenuItem value="siem">SIEM</MenuItem>
+                                    <MenuItem value="endpoint_protection">Endpoint Protection</MenuItem>
+                                    <MenuItem value="network_monitoring">Network Monitoring</MenuItem>
+                                    <MenuItem value="log_analysis">Log Analysis</MenuItem>
+                                    <MenuItem value="other">Other</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -451,7 +453,7 @@ function ToolForm({ tool, onSave, onCancel, open }) {
 }
 
 // Main Admin Settings Component
-const Settings = () => {
+const Sources = () => {
     const [currentTab, setCurrentTab] = useState(0);
     const [kpis, setKpis] = useState([]);
     const [tools, setTools] = useState([]);
@@ -888,4 +890,4 @@ const Settings = () => {
     );
 };
 
-export default Settings;
+export default Sources;

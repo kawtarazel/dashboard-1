@@ -1,14 +1,31 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, Download, Upload, Moon, Sun, ChevronDown } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-function DashboardHeader() {
+function DashboardHeader({ setSwitch, setActiveItem }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <header className="bg-white border-b border-gray-200 p-2">
@@ -62,7 +79,7 @@ function DashboardHeader() {
           </button>
 
           {/* User Profile */}
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center space-x-2 px-3 py-2 rounded-full bg-blue-200 hover:bg-gray-100 transition-colors"
@@ -87,11 +104,13 @@ function DashboardHeader() {
                 <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   Settings
                 </a>
-                {/* ************if user is_superuser display an option to go to manage users and send him to /admin if click it********************** */}
                 {user?.is_superuser && (
                   <a
-                    href="/admin"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => {
+                      setSwitch(true);
+                      setActiveItem(0);
+                    }}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     Manage Users
                   </a>
@@ -100,7 +119,6 @@ function DashboardHeader() {
                 <button
                   onClick={() => {
                     logout();
-                    navigate('/login');
                   }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
