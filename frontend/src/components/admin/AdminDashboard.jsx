@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { act, useEffect, useState } from 'react';
 import api, {authApi} from '../../services/api';
 import {
   Box,
@@ -59,6 +59,7 @@ const AdminDashboard = () => {
   const [permDialogUser, setPermDialogUser] = useState(null);
   const [allPermissions, setAllPermissions] = useState([]);
   const [selectedPerms, setSelectedPerms] = useState([]);
+  const [activeDashboard, setActiveDashboard] = useState('users');
 
   const fetchUsers = async () => {
     try {
@@ -162,7 +163,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 2, mb: 4, ml:0 }}>
       <Fade in={true} timeout={800}>
         <Box>
           {/* Header Section */}
@@ -188,10 +189,7 @@ const AdminDashboard = () => {
             <Button
               variant="contained"
               startIcon={<LogoutIcon />}
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
+              onClick={() => {navigate('/dashboard');}}
               sx={{
                 background: 'rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(10px)',
@@ -201,7 +199,7 @@ const AdminDashboard = () => {
                 }
               }}
             >
-              Sign Out
+              Switch to KPIs Dashboard
             </Button>
           </Box>
 

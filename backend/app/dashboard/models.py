@@ -61,6 +61,7 @@ class Log(Base):
     # metrics ...
     
     tool = relationship("Tool", back_populates="logs")
+    file = relationship("File", back_populates="logs")
 
 Tool.logs = relationship("Log", order_by=Log.created_at, back_populates="tool")
 

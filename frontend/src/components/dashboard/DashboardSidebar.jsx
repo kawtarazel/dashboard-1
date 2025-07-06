@@ -1,32 +1,30 @@
 import React, { useState } from 'react';
-import { LayoutGrid , Settings, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutGrid, Settings, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 
-function DashboardSidebar() {
-  const [activeItem, setActiveItem] = useState('Overview');
+// Accepts activeItem (string or number) and onSelect (function) as props
+function DashboardSidebar({ activeItem, onSelect }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
     {
-      id: 'Overview',
+      id: 0,
       label: 'Overview',
-      icon: LayoutGrid ,
-      active: true
+      icon: LayoutGrid
     },
     {
-      id: 'Settings',
+      id: 1,
       label: 'Settings',
-      icon: Settings,
-      active: false
+      icon: Settings
     },
     {
-      id: 'Sources',
+      id: 2,
       label: 'Sources',
-      icon: Globe,
-      active: false
+      icon: Globe
     }
   ];
+
   const handleItemClick = (itemId) => {
-    setActiveItem(itemId);
+    if (onSelect) onSelect(itemId);
   };
 
   const toggleSidebar = () => {
@@ -40,7 +38,6 @@ function DashboardSidebar() {
         {menuItems.map((item) => {
           const IconComponent = item.icon;
           const isActive = activeItem === item.id;
-          
           return (
             <button
               key={item.id}

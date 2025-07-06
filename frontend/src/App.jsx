@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import VerifyEmailNotice from './components/auth/VerifyEmailNotice';
 import DashboardLayout from './components/dashboard/DashboardLayout';
-import AdminDashboard from './components/admin/AdminDashboard';
+import AdminDashboardLayout from './components/admin/AdminDashboardLayout';
 import { AuthProvider } from './contexts/AuthContext';
 import { Signup } from './components/auth/Signup';
 import { Login } from './components/auth/Login';
@@ -28,7 +28,6 @@ const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" />;
-  if (!user.is_superuser) return <Navigate to="/dashboard" />;
   return children;
 };
 
@@ -43,11 +42,7 @@ const LoginRedirect = () => {
   const navigate = useNavigate();
   useEffect(() => {
     if (!loading && user) {
-      if (user.is_superuser) {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+      navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate]);
   return <Login />;
@@ -67,7 +62,7 @@ function App() {
               path="/admin"
               element={
                 <AdminRoute>
-                  <AdminDashboard />
+                  <AdminDashboardLayout />
                 </AdminRoute>
               }
             />

@@ -187,7 +187,7 @@ async def root():
 # Include routers
 from .auth.auth_routes import router as auth_router
 from .auth.admin_routes import router as admin_router
-from .dashboard.test_routes import router as dashboard_router
+from .dashboard.dashbord_routes import router as dashboard_router
 
 app.include_router(auth_router, prefix='/api', tags=["auth"])
 app.include_router(admin_router, prefix='/api', tags=["admin"])

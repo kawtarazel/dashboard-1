@@ -87,6 +87,15 @@ function DashboardHeader() {
                 <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   Settings
                 </a>
+                {/* ************if user is_superuser display an option to go to manage users and send him to /admin if click it********************** */}
+                {user?.is_superuser && (
+                  <a
+                    href="/admin"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Manage Users
+                  </a>
+                )}
                 <hr className="my-2" />
                 <button
                   onClick={() => {
