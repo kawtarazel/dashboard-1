@@ -10,6 +10,7 @@ from slowapi.errors import RateLimitExceeded
 
 from .auth import security
 from .core.config import settings
+from .core.security_headers import add_security_headers
 
 from app.dashboard.database import engine as dashboard_engine
 from app.dashboard import models as dashboard_models
@@ -39,6 +40,7 @@ app = FastAPI(
     description="Cybersecurity Dashboard with Role-Based Access Control",
     version="1.0.0"
 )
+add_security_headers(app)
 
 # ✅ FIXED: Add rate limiting to main app
 app.state.limiter = limiter

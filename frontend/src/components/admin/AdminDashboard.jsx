@@ -1,5 +1,5 @@
 import React, { act, useEffect, useState } from 'react';
-import api, {authApi} from '../../services/api';
+import api, { authApi } from '../../services/api';
 import {
   Box,
   Typography,
@@ -46,7 +46,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Autocomplete from '@mui/material/Autocomplete';
 
-const AdminDashboard = ({setSwitch}) => {
+const AdminDashboard = ({ setSwitch }) => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,6 +56,7 @@ const AdminDashboard = ({setSwitch}) => {
   const [permDialogUser, setPermDialogUser] = useState(null);
   const [allPermissions, setAllPermissions] = useState([]);
   const [selectedPerms, setSelectedPerms] = useState([]);
+  const { user: currentUser } = useAuth();
 
   const fetchUsers = async () => {
     try {
@@ -86,7 +87,7 @@ const AdminDashboard = ({setSwitch}) => {
     }
   };
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -146,14 +147,14 @@ const AdminDashboard = ({setSwitch}) => {
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 4, ml:0 }}>
+    <Container maxWidth="xl" sx={{ mt: 2, mb: 4, ml: 0 }}>
       <Fade in={true} timeout={800}>
         <Box>
           {/* Header Section */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             mb: 4,
             p: 3,
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -172,7 +173,7 @@ const AdminDashboard = ({setSwitch}) => {
             <Button
               variant="contained"
               startIcon={<LogoutIcon />}
-              onClick={() => {setSwitch(false)}}
+              onClick={() => { setSwitch(false) }}
               sx={{
                 background: 'rgba(255,255,255,0.2)',
                 backdropFilter: 'blur(10px)',
@@ -190,8 +191,8 @@ const AdminDashboard = ({setSwitch}) => {
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {statsCards.map((card, index) => (
               <Grid key={index}>
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     height: '100%',
                     background: card.color,
                     border: `2px solid ${card.borderColor}`,
@@ -222,9 +223,9 @@ const AdminDashboard = ({setSwitch}) => {
           </Grid>
 
           {/* Search and Table Section */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
+          <Paper
+            elevation={0}
+            sx={{
               borderRadius: 3,
               border: '1px solid #E5E7EB',
               overflow: 'hidden',
@@ -274,19 +275,19 @@ const AdminDashboard = ({setSwitch}) => {
                 </TableHead>
                 <TableBody>
                   {filteredUsers.map((user, index) => (
-                    <TableRow 
+                    <TableRow
                       key={user.id}
-                      sx={{ 
+                      sx={{
                         '&:hover': { background: '#F9FAFB' },
                         borderBottom: index === filteredUsers.length - 1 ? 'none' : '1px solid #E5E7EB'
                       }}
                     >
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar 
-                            sx={{ 
-                              width: 40, 
-                              height: 40, 
+                          <Avatar
+                            sx={{
+                              width: 40,
+                              height: 40,
                               mr: 2,
                               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                               fontWeight: 'bold'
@@ -305,7 +306,7 @@ const AdminDashboard = ({setSwitch}) => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip 
+                        <Chip
                           label={user.is_verified ? 'Verified' : 'Unverified'}
                           sx={{
                             background: user.is_verified ? '#D1FAE5' : '#FEF3C7',
@@ -317,7 +318,7 @@ const AdminDashboard = ({setSwitch}) => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip 
+                        <Chip
                           label={user.is_superuser ? 'Administrator' : 'Standard User'}
                           sx={{
                             background: user.is_superuser ? '#EDE9FE' : '#F3F4F6',
@@ -330,21 +331,21 @@ const AdminDashboard = ({setSwitch}) => {
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Chip 
-                            label={user.role.name} 
-                            size="small" 
-                            sx={{ 
+                          <Chip
+                            label={user.role.name}
+                            size="small"
+                            sx={{
                               mr: 1,
                               background: '#EBF8FF',
                               color: '#1E40AF',
                               border: '1px solid #3B82F6'
-                            }} 
+                            }}
                           />
                           <Tooltip title="Edit Role">
                             <IconButton
                               size="small"
                               onClick={() => setUsers(users => users.map(u => u.id === user.id ? { ...u, editingRole: true } : u))}
-                              sx={{ 
+                              sx={{
                                 color: '#6B7280',
                                 '&:hover': { color: '#3B82F6', background: '#EBF8FF' }
                               }}
@@ -367,10 +368,10 @@ const AdminDashboard = ({setSwitch}) => {
                                     toast.error('Failed to update role');
                                   }
                                 }}
-                                sx={{ 
-                                  minWidth: 120, 
-                                  mr: 1, 
-                                  background: '#fff', 
+                                sx={{
+                                  minWidth: 120,
+                                  mr: 1,
+                                  background: '#fff',
                                   borderRadius: 2,
                                   '& .MuiSelect-select': {
                                     py: 1
@@ -384,9 +385,9 @@ const AdminDashboard = ({setSwitch}) => {
                               <Button
                                 size="small"
                                 variant="contained"
-                                sx={{ 
-                                  ml: 1, 
-                                  minWidth: 0, 
+                                sx={{
+                                  ml: 1,
+                                  minWidth: 0,
                                   px: 2,
                                   borderRadius: 2,
                                   background: '#10B981',
@@ -490,20 +491,23 @@ const AdminDashboard = ({setSwitch}) => {
                         </Dialog>
                       </TableCell>
                       <TableCell>
-                        <Tooltip title="Delete User">
-                          <IconButton 
-                            onClick={() => handleDelete(user.id)} 
-                            size="small"
-                            sx={{ 
-                              color: '#DC2626',
-                              '&:hover': { 
-                                background: '#FEE2E2',
-                                color: '#B91C1C'
-                              }
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                        <Tooltip title={user.id === currentUser?.id ? "You can't delete yourself" : "Delete User"}>
+                          <span>
+                            <IconButton
+                              onClick={() => handleDelete(user.id)}
+                              size="small"
+                              sx={{
+                                color: '#DC2626',
+                                '&:hover': {
+                                  background: '#FEE2E2',
+                                  color: '#B91C1C'
+                                }
+                              }}
+                              disabled={user.id === currentUser?.id}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </span>
                         </Tooltip>
                       </TableCell>
                     </TableRow>
