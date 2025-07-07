@@ -57,6 +57,34 @@ async def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
             detail="Email or username already registered"
         )
     
+    # Enforce strong password policy
+    import re
+    pw = user.password
+    if not pw or len(pw) < 12:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 12 characters long."
+        )
+    if not re.search(r"[a-z]", pw):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one lowercase letter."
+        )
+    if not re.search(r"[A-Z]", pw):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one uppercase letter."
+        )
+    if not re.search(r"[0-9]", pw):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one digit."
+        )
+    if not re.search(r"[^a-zA-Z0-9]", pw):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must contain at least one special character."
+        )
     # Hash password
     hashed_password = security.get_password_hash(user.password)
     token = str(uuid.uuid4())
@@ -186,13 +214,21 @@ async def refresh_token(current_token: str = Depends(oauth2_scheme), db: Session
         "token_type": "bearer"
     }
 
+
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    """Get current authenticated user"""
+    """Get current authenticated user, with token blacklist check"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    # Blacklist check
+    if security.is_token_blacklisted(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked. Please log in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         email: str = payload.get("sub")
@@ -200,16 +236,17 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
     user = db.query(models.User).filter(models.User.email == email).first()
     if user is None:
         raise credentials_exception
     return user
 
+
 @router.post("/auth/logout")
-def logout():
-    """Logout endpoint"""
-    return {"message": "Logged out. Please remove tokens on client."}
+def logout(token: str = Depends(oauth2_scheme)):
+    """Logout endpoint: Blacklist the current token"""
+    security.blacklist_token(token)
+    return {"message": "Logged out. Token has been revoked."}
 
 @router.get("/auth/me", response_model=schemas.User)
 def get_me(current_user: models.User = Depends(get_current_user)):

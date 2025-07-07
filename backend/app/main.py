@@ -120,15 +120,18 @@ def seed_auth_data():
             print("✅ Role permissions seeded")
 
         # Create admin user
-        admin_exists = db.query(models.User).filter(models.User.email == "admin@admin.com").first()
+        import os
+        admin_email = os.getenv("ADMIN_EMAIL")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        admin_exists = db.query(models.User).filter(models.User.email == admin_email).first()
         if not admin_exists:
             # Get Strategic role (assuming it exists)
             strategic_role = db.query(models.Role).filter(models.Role.name == 'Strategic').first()
             if strategic_role:
                 admin = models.User(
-                    email="admin@admin.com",
+                    email=admin_email,
                     username="admin",
-                    hashed_password=security.get_password_hash("admin123"),
+                    hashed_password=security.get_password_hash(admin_password),
                     is_superuser=True,
                     is_active=True,
                     is_verified=True,
@@ -136,7 +139,7 @@ def seed_auth_data():
                 )
                 db.add(admin)
                 db.commit()
-                print("✅ Admin user created (admin@admin.com / admin123)")
+                print(f"✅ Admin user created ({admin_email} / {admin_password})")
             else:
                 print("⚠️ Strategic role not found, admin user not created")
 

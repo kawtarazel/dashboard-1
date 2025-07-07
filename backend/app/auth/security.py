@@ -1,3 +1,17 @@
+import threading
+
+# In-memory set for blacklisted tokens (thread-safe)
+blacklisted_tokens = set()
+blacklist_lock = threading.Lock()
+
+def blacklist_token(token: str):
+    with blacklist_lock:
+        blacklisted_tokens.add(token)
+
+def is_token_blacklisted(token: str) -> bool:
+    with blacklist_lock:
+        return token in blacklisted_tokens
+
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt

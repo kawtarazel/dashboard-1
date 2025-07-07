@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -15,7 +15,8 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_verified = Column(Boolean, default=False)
-    verification_token = Column(String, unique=True, nullable=True)  # For email verification
+    verification_token = Column(String, unique=True, nullable=True)
+    preferences = Column(JSON, nullable=True)
 
     # Single role per user
     role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)

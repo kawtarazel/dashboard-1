@@ -1,10 +1,34 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
+import json
+class ConfigurationModel(BaseModel):
+    configuration: Optional[str] = None
+
+    @field_validator('configuration')
+    def validate_configuration(cls, v):
+        if v:
+            try:
+                json.loads(v)  # Ensure it's valid JSON
+            except json.JSONDecodeError:
+                raise ValueError('Configuration must be valid JSON')
+        return v
+
 from datetime import datetime
+
 
 class UserBase(BaseModel):
     email: EmailStr
     username: str
+    preference: Optional[str] = None
+
+    @field_validator('preference')
+    def validate_preference(cls, v):
+        if v:
+            try:
+                json.loads(v)  # Ensure it's valid JSON
+            except json.JSONDecodeError:
+                raise ValueError('Preference must be valid JSON')
+        return v
 
 class UserCreate(UserBase):
     password: str
@@ -34,6 +58,7 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
+
 class RoleBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -47,6 +72,7 @@ class Role(RoleBase):
 
     class Config:
         from_attributes = True
+
 
 class PermissionBase(BaseModel):
     name: str

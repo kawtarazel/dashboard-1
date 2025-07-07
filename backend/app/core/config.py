@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+    ADMIN_EMAIL: str
+    ADMIN_PASSWORD: str
     # AUTH Database Settings
     AUTH_POSTGRES_HOST: str
     AUTH_POSTGRES_PORT: str
