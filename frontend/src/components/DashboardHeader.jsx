@@ -1,14 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Download, Upload, Moon, Sun, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 function DashboardHeader({ setSwitch, setActiveItem }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   useEffect(() => {

@@ -1,29 +1,29 @@
-import { Target, TrendingUp, DollarSign, Shield, CheckCircle } from 'lucide-react';
+import { TrendingUp, DollarSign, Shield, CheckCircle } from 'lucide-react';
 
 // Composant Strategic
 const Strategic = {
   getDashboardData: () => ({
     kpis: [
       { 
-        title: 'Strategic Goals', 
-        value: '7', 
-        unit: '/10', 
+        title: 'Cybersecurity Budget', 
+        value: '70', 
+        unit: '%', 
         progress: 70, 
-        icon: <Target className="w-5 h-5 text-purple-600" />
+        icon: <DollarSign className="w-5 h-5 text-green-600" />
       },
       { 
-        title: 'Market Share', 
-        value: '23.5', 
+        title: 'Security staff trained', 
+        value: '10', 
         unit: '%', 
-        progress: 85, 
+        progress: 10, 
         icon: <TrendingUp className="w-5 h-5 text-blue-600" />
       },
       { 
-        title: 'Revenue Growth', 
+        title: 'Incident Trend', 
         value: '18.2', 
         unit: '%', 
-        progress: 92, 
-        icon: <DollarSign className="w-5 h-5 text-green-600" />
+        progress: 10, 
+        icon: <TrendingUp className="w-5 h-5 text-green-600" />
       },
       { 
         title: 'Innovation Index', 
