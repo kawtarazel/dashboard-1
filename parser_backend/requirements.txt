@@ -1,0 +1,13 @@
+# requirements.txt for parser_backend
+# Add your dependencies here, for example:
+
+# Core dependencies
+
+# If you use any of these, uncomment as needed:
+# pydantic
+# requests
+# loguru
+
+# Example:
+# pydantic==2.6.4
+# requests==2.31.0

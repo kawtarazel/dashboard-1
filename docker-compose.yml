@@ -115,6 +115,18 @@ services:
     networks:
       - dashboard-net
 
+  parser_backend:
+    build:
+      context: .
+      dockerfile: parser_backend/Dockerfile
+    volumes:
+      - ./parser_backend:/app
+    command: ["python", "main.py"]
+    networks:
+      - dashboard-net
+    depends_on:
+      - backend
+
 networks:
   dashboard-net:
     driver: bridge
