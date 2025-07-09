@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import httpx
 from parsers.nessus import NessusParser
-from normalizer import Normalizer  # Fixed import
+from normalizer import Normalizer
 import json
 import logging
 
@@ -44,7 +44,7 @@ async def parse_file(request: ParseRequest):
             # Get file information
             response = await client.get(
                 f"{DASHBOARD_SERVICE_URL}/api/dashboard/files/{request.file_id}",
-                headers={"Authorization": f"Bearer {request.auth_token}"},  # Use the token
+                headers={"Authorization": f"Bearer {request.auth_token}"},
                 timeout=30.0,
             )
             
@@ -83,13 +83,22 @@ async def parse_file(request: ParseRequest):
             
             # Initialize appropriate parser based on tool type
             parser = None
-            if tool_info['type'] == 'vulnerability_scanner' and 'nessus' in tool_info['name'].lower():
-                parser = NessusParser()
+            if tool_info['type'] == 'vulnerability_scanner':
+                # For vulnerability scanners, we need to determine the specific type
+                tool_name_lower = tool_info['name'].lower()
+                if 'nessus' in tool_name_lower:
+                    parser = NessusParser()
+                else:
+                    logger.warning(f"Unsupported vulnerability scanner: {tool_info['name']}")
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"Vulnerability scanner '{tool_info['name']}' is not supported yet. Currently supported: Nessus"
+                    )
             else:
                 logger.warning(f"No parser available for tool type: {tool_info['type']}")
                 raise HTTPException(
                     status_code=400, 
-                    detail=f"Parser not available for tool type: {tool_info['type']}"
+                    detail=f"Tool type '{tool_info['type']}' is not supported yet. Currently supported: vulnerability_scanner (Nessus)"
                 )
             
             # Parse the report
@@ -101,11 +110,17 @@ async def parse_file(request: ParseRequest):
                     logger.error("Parser returned non-list result")
                     raise HTTPException(status_code=500, detail="Invalid response from parser")
                 
+                # Handle empty results
+                if len(findings) == 0:
+                    logger.info("No findings found in the report")
+                    return {"findings": []}
+                
                 # Normalize findings
                 normalizer = Normalizer()
                 parsed_findings = []
+                normalization_errors = 0
                 
-                for finding in findings:
+                for i, finding in enumerate(findings):
                     try:
                         normalized = normalizer.normalize(finding)
                         parsed_findings.append({
@@ -113,21 +128,54 @@ async def parse_file(request: ParseRequest):
                             "normalized_finding": normalized  # Processed data
                         })
                     except Exception as e:
-                        logger.warning(f"Failed to normalize finding: {str(e)}")
+                        normalization_errors += 1
+                        logger.warning(f"Failed to normalize finding {i+1}: {str(e)}")
+                        # Continue processing other findings
                         continue
                 
-                logger.info(f"Successfully normalized {len(parsed_findings)} findings")
-                return {"findings": parsed_findings}  # Structured response
+                # Log normalization results
+                if normalization_errors > 0:
+                    logger.warning(f"Failed to normalize {normalization_errors} out of {len(findings)} findings")
                 
+                logger.info(f"Successfully normalized {len(parsed_findings)} findings")
+                return {"findings": parsed_findings}
+                
+            except ValueError as e:
+                # Handle format validation errors with user-friendly messages
+                error_message = str(e)
+                logger.error(f"Format validation error: {error_message}")
+                
+                # Provide specific guidance based on the error
+                if "does not appear to be a valid Nessus v2 report" in error_message:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="The uploaded file is not a valid Nessus report. Please ensure you exported the report as '.nessus' format from Tenable Nessus."
+                    )
+                elif "does not have valid Nessus report structure" in error_message:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="The file structure is not valid for a Nessus report. Please check that the XML export completed successfully."
+                    )
+                elif "Invalid XML format" in error_message:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="The uploaded file contains invalid XML. Please re-export the report from Nessus."
+                    )
+                else:
+                    raise HTTPException(status_code=400, detail=error_message)
+                    
             except Exception as e:
-                logger.error(f"Error parsing report: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Error parsing report: {str(e)}")
+                logger.error(f"Unexpected error parsing report: {str(e)}")
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"An unexpected error occurred while parsing the report. Please check the file format and try again."
+                )
             
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Unexpected error in parse_file: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Service error: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

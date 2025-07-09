@@ -46,10 +46,13 @@ import {
     Build as BuildIcon,
     ExpandMore as ExpandMoreIcon,
     Save as SaveIcon,
-    Cancel as CancelIcon
+    Cancel as CancelIcon,
+    Lock as LockIcon,
+    Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { dashboardApi } from '../services/dashboardApi';
+import { useAuth } from '../contexts/AuthContext';
 
 // Tab Panel Component
 function TabPanel({ children, value, index, ...other }) {
@@ -111,15 +114,15 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
 
         try {
             if (kpi?.id) {
-                dashboardApi.updateKPI(kpi.id, formData);
-                toast.success('KPI updated successfully');
+                await dashboardApi.updateKPI(kpi.id, formData);
+                toast.success('✅ KPI updated successfully');
             } else {
-                dashboardApi.createKPI(formData);
-                toast.success('KPI created successfully');
+                await dashboardApi.createKPI(formData);
+                toast.success('✅ KPI created successfully');
             }
             onSave();
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Error saving KPI');
+            toast.error(`❌ ${error.response?.data?.detail || 'Error saving KPI'}`);
         } finally {
             setLoading(false);
         }
@@ -134,11 +137,15 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
 
     return (
         <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
-            <DialogTitle>
+            <DialogTitle sx={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontWeight: 'bold'
+            }}>
                 {kpi ? 'Edit KPI' : 'Create New KPI'}
             </DialogTitle>
             <form onSubmit={handleSubmit}>
-                <DialogContent>
+                <DialogContent sx={{ mt: 2 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -148,6 +155,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 fullWidth
                                 required
                                 margin="normal"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -173,6 +181,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 multiline
                                 rows={2}
                                 margin="normal"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -184,6 +193,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 required
                                 margin="normal"
                                 placeholder="e.g., Security, Performance"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -195,6 +205,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 required
                                 margin="normal"
                                 placeholder="e.g., > 95%, < 10"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -205,6 +216,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 fullWidth
                                 margin="normal"
                                 placeholder="e.g., %, count, minutes"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -233,6 +245,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 fullWidth
                                 margin="normal"
                                 placeholder="e.g., Fortinet, OpenVAS, F5"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -243,6 +256,7 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 fullWidth
                                 margin="normal"
                                 placeholder="e.g., (blocked_attacks / total_requests) * 100"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -253,12 +267,13 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                                 fullWidth
                                 margin="normal"
                                 placeholder="e.g., Percentage, Count, Chart"
+                                variant="outlined"
                             />
                         </Grid>
                     </Grid>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={onCancel} disabled={loading}>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={onCancel} disabled={loading} variant="outlined">
                         Cancel
                     </Button>
                     <Button
@@ -266,6 +281,12 @@ function KPIForm({ kpi, onSave, onCancel, open }) {
                         variant="contained"
                         disabled={loading}
                         startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+                        sx={{ 
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                            }
+                        }}
                     >
                         {loading ? 'Saving...' : 'Save'}
                     </Button>
@@ -308,19 +329,17 @@ function ToolForm({ tool, onSave, onCancel, open }) {
         e.preventDefault();
         setLoading(true);
 
-        console.log('Submitting form data:', formData);
-
         try {
             if (tool?.id) {
                 await dashboardApi.updateTool(tool.id, formData);
-                toast.success('Tool updated successfully');
+                toast.success('✅ Tool updated successfully');
             } else {
                 await dashboardApi.createTool(formData);
-                toast.success('Tool created successfully');
+                toast.success('✅ Tool created successfully');
             }
             onSave();
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Error saving tool');
+            toast.error(`❌ ${error.response?.data?.detail || 'Error saving tool'}`);
         } finally {
             setLoading(false);
         }
@@ -335,11 +354,15 @@ function ToolForm({ tool, onSave, onCancel, open }) {
 
     return (
         <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
-            <DialogTitle>
+            <DialogTitle sx={{ 
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white',
+                fontWeight: 'bold'
+            }}>
                 {tool ? 'Edit Tool' : 'Create New Tool'}
             </DialogTitle>
             <form onSubmit={handleSubmit}>
-                <DialogContent>
+                <DialogContent sx={{ mt: 2 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -349,6 +372,7 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                 fullWidth
                                 required
                                 margin="normal"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -359,6 +383,7 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                 fullWidth
                                 margin="normal"
                                 placeholder="e.g., Fortinet, Palo Alto"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -370,6 +395,7 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                 multiline
                                 rows={2}
                                 margin="normal"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12} sm={4}>
@@ -418,6 +444,7 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                 fullWidth
                                 margin="normal"
                                 placeholder="e.g., 7.4.1, 2023.1"
+                                variant="outlined"
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -430,12 +457,13 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                                 rows={3}
                                 margin="normal"
                                 placeholder="JSON configuration or setup notes"
+                                variant="outlined"
                             />
                         </Grid>
                     </Grid>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={onCancel} disabled={loading}>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={onCancel} disabled={loading} variant="outlined">
                         Cancel
                     </Button>
                     <Button
@@ -443,6 +471,12 @@ function ToolForm({ tool, onSave, onCancel, open }) {
                         variant="contained"
                         disabled={loading}
                         startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+                        sx={{ 
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                            }
+                        }}
                     >
                         {loading ? 'Saving...' : 'Save'}
                     </Button>
@@ -452,19 +486,23 @@ function ToolForm({ tool, onSave, onCancel, open }) {
     );
 }
 
-// Main Admin Settings Component
+// Main Sources Component
 const Sources = () => {
     const [currentTab, setCurrentTab] = useState(0);
     const [kpis, setKpis] = useState([]);
     const [tools, setTools] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     // Dialog states
     const [kpiDialogOpen, setKpiDialogOpen] = useState(false);
     const [toolDialogOpen, setToolDialogOpen] = useState(false);
     const [selectedKpi, setSelectedKpi] = useState(null);
     const [selectedTool, setSelectedTool] = useState(null);
+
+    // Check if user is superuser
+    const isSuperUser = user?.is_superuser || false;
 
     useEffect(() => {
         fetchData();
@@ -483,59 +521,81 @@ const Sources = () => {
             setTools(toolsRes);
             setStats(statsRes);
         } catch (error) {
-            toast.error('Failed to fetch dashboard data');
+            toast.error('❌ Failed to fetch dashboard data');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDeleteKpi = async (kpiId) => {
+        if (!isSuperUser) {
+            toast.error('❌ Only administrators can delete KPIs');
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to delete this KPI?')) return;
 
         try {
-            dashboardApi.deleteKPI(kpiId);
-            toast.success('KPI deleted successfully');
+            await dashboardApi.deleteKPI(kpiId);
+            toast.success('✅ KPI deleted successfully');
             fetchData();
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Failed to delete KPI');
+            toast.error(`❌ ${error.response?.data?.detail || 'Failed to delete KPI'}`);
         }
     };
 
     const handleDeleteTool = async (toolId) => {
+        if (!isSuperUser) {
+            toast.error('❌ Only administrators can delete tools');
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to delete this tool?')) return;
 
         try {
-            dashboardApi.deleteTool(toolId);
-            toast.success('Tool deleted successfully');
+            await dashboardApi.deleteTool(toolId);
+            toast.success('✅ Tool deleted successfully');
             fetchData();
         } catch (error) {
-            toast.error(error.response?.data?.detail || 'Failed to delete tool');
+            toast.error(`❌ ${error.response?.data?.detail || 'Failed to delete tool'}`);
         }
     };
 
     const getLevelColor = (level) => {
         const colors = {
-            operational: '#4CAF50',
-            managerial: '#FF9800',
-            strategic: '#9C27B0'
+            operational: '#10b981',
+            managerial: '#f59e0b',
+            strategic: '#8b5cf6'
         };
-        return colors[level] || '#757575';
+        return colors[level?.toLowerCase()] || '#6b7280';
     };
 
     const getCategoryColor = (category) => {
         const colors = {
-            firewall: '#F44336',
-            antivirus: '#4CAF50',
-            vulnerability_scanner: '#FF9800',
-            waf: '#2196F3',
-            ids_ips: '#9C27B0',
-            siem: '#795548',
-            endpoint_protection: '#009688',
-            network_monitoring: '#3F51B5',
-            log_analysis: '#607D8B',
-            other: '#757575'
+            data: '#ef4444',
+            IAM: '#10b981',
+            IAC: '#f59e0b',
+            perimeter: '#3b82f6',
+            monitoring_response: '#8b5cf6',
+            GOR: '#6b7280'
         };
-        return colors[category] || '#757575';
+        return colors[category] || '#6b7280';
+    };
+
+    const getTypeColor = (type) => {
+        const colors = {
+            firewall: '#ef4444',
+            antivirus: '#10b981',
+            vulnerability_scanner: '#f59e0b',
+            waf: '#3b82f6',
+            ids_ips: '#8b5cf6',
+            siem: '#78716c',
+            endpoint_protection: '#059669',
+            network_monitoring: '#4338ca',
+            log_analysis: '#475569',
+            other: '#6b7280'
+        };
+        return colors[type] || '#6b7280';
     };
 
     if (loading) {
@@ -550,65 +610,99 @@ const Sources = () => {
         <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
             {/* Header */}
             <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" fontWeight="bold" gutterBottom>
-                    <SettingsIcon sx={{ mr: 2, verticalAlign: 'middle' }} />
-                    Dashboard Settings
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                    Manage KPIs, tools, and dashboard configuration
-                </Typography>
+                <Box sx={{ 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: 3,
+                    p: 4,
+                    color: 'white',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                }}>
+                    <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                        <SettingsIcon sx={{ mr: 2 }} />
+                        Dashboard Configuration
+                    </Typography>
+                    <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                        {isSuperUser ? 'Manage KPIs, tools, and dashboard settings' : 'View KPIs, tools, and dashboard configuration'}
+                    </Typography>
+                    {!isSuperUser && (
+                        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                            <LockIcon sx={{ mr: 1, fontSize: 20 }} />
+                            <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                                Read-only access - Contact administrator to modify settings
+                            </Typography>
+                        </Box>
+                    )}
+                </Box>
             </Box>
 
             {/* Statistics Cards */}
             {stats && (
                 <Grid container spacing={3} sx={{ mb: 4 }}>
                     <Grid item xs={12} md={4}>
-                        <Card>
+                        <Card sx={{ 
+                            background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                            border: '2px solid #3b82f6',
+                            borderRadius: 3,
+                            transition: 'transform 0.2s',
+                            '&:hover': { transform: 'translateY(-2px)' }
+                        }}>
                             <CardContent>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Typography variant="h4" fontWeight="bold" color="primary">
+                                        <Typography variant="h4" fontWeight="bold" color="#1e40af">
                                             {stats.kpis.total}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="body2" color="text.secondary" fontWeight="medium">
                                             Total KPIs
                                         </Typography>
                                     </Box>
-                                    <AssessmentIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+                                    <AssessmentIcon sx={{ fontSize: 40, color: '#3b82f6' }} />
                                 </Box>
                             </CardContent>
                         </Card>
                     </Grid>
                     <Grid item xs={12} md={4}>
-                        <Card>
+                        <Card sx={{ 
+                            background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+                            border: '2px solid #10b981',
+                            borderRadius: 3,
+                            transition: 'transform 0.2s',
+                            '&:hover': { transform: 'translateY(-2px)' }
+                        }}>
                             <CardContent>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Typography variant="h4" fontWeight="bold" color="secondary">
+                                        <Typography variant="h4" fontWeight="bold" color="#047857">
                                             {stats.tools.total}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="body2" color="text.secondary" fontWeight="medium">
                                             Total Tools
                                         </Typography>
                                     </Box>
-                                    <BuildIcon sx={{ fontSize: 40, color: 'secondary.main' }} />
+                                    <BuildIcon sx={{ fontSize: 40, color: '#10b981' }} />
                                 </Box>
                             </CardContent>
                         </Card>
                     </Grid>
                     <Grid item xs={12} md={4}>
-                        <Card>
+                        <Card sx={{ 
+                            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                            border: '2px solid #f59e0b',
+                            borderRadius: 3,
+                            transition: 'transform 0.2s',
+                            '&:hover': { transform: 'translateY(-2px)' }
+                        }}>
                             <CardContent>
                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Box>
-                                        <Typography variant="h4" fontWeight="bold" color="success.main">
+                                        <Typography variant="h4" fontWeight="bold" color="#d97706">
                                             {stats.logs.today}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="body2" color="text.secondary" fontWeight="medium">
                                             Logs Today
                                         </Typography>
                                     </Box>
-                                    <AssessmentIcon sx={{ fontSize: 40, color: 'success.main' }} />
+                                    <AssessmentIcon sx={{ fontSize: 40, color: '#f59e0b' }} />
                                 </Box>
                             </CardContent>
                         </Card>
@@ -617,51 +711,66 @@ const Sources = () => {
             )}
 
             {/* Main Content */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid #E5E7EB' }}>
+            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs
                         value={currentTab}
                         onChange={(e, newValue) => setCurrentTab(newValue)}
                         aria-label="settings tabs"
+                        sx={{
+                            '& .MuiTab-root': {
+                                fontWeight: 'medium',
+                                textTransform: 'none',
+                                fontSize: '1rem'
+                            }
+                        }}
                     >
                         <Tab label="KPI Management" />
                         <Tab label="Tool Management" />
-                        <Tab label="Configuration" />
+                        <Tab label="Statistics" />
                     </Tabs>
                 </Box>
 
                 {/* KPI Management Tab */}
                 <TabPanel value={currentTab} index={0}>
-                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h6">Key Performance Indicators</Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => {
-                                setSelectedKpi(null);
-                                setKpiDialogOpen(true);
-                            }}
-                        >
-                            Add KPI
-                        </Button>
+                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h5" fontWeight="bold">Key Performance Indicators</Typography>
+                        {isSuperUser && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => {
+                                    setSelectedKpi(null);
+                                    setKpiDialogOpen(true);
+                                }}
+                                sx={{ 
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                                    }
+                                }}
+                            >
+                                Add KPI
+                            </Button>
+                        )}
                     </Box>
 
-                    <TableContainer>
+                    <TableContainer sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                         <Table>
                             <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Level</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Target</TableCell>
-                                    <TableCell>Frequency</TableCell>
-                                    <TableCell>Data Source</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                <TableRow sx={{ backgroundColor: '#f8fafc' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Level</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Type</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Target</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Frequency</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Data Source</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {kpis && kpis.map((kpi) => (
-                                    <TableRow key={kpi.id} hover>
+                                    <TableRow key={kpi.id} hover sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
                                         <TableCell>
                                             <Box>
                                                 <Typography variant="body1" fontWeight="medium">
@@ -679,39 +788,55 @@ const Sources = () => {
                                                 sx={{
                                                     backgroundColor: getLevelColor(kpi.level),
                                                     color: 'white',
-                                                    textTransform: 'capitalize'
+                                                    textTransform: 'capitalize',
+                                                    fontWeight: 'medium'
                                                 }}
                                             />
                                         </TableCell>
-                                        <TableCell>{kpi.type}</TableCell>
                                         <TableCell>
-                                            {kpi.target} {kpi.unit}
+                                            <Chip label={kpi.type} size="small" variant="outlined" />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight="medium">
+                                                {kpi.target} {kpi.unit}
+                                            </Typography>
                                         </TableCell>
                                         <TableCell>
                                             <Chip label={kpi.frequency} size="small" variant="outlined" />
                                         </TableCell>
                                         <TableCell>{kpi.data_source || 'N/A'}</TableCell>
                                         <TableCell>
-                                            <Tooltip title="Edit">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => {
-                                                        setSelectedKpi(kpi);
-                                                        setKpiDialogOpen(true);
-                                                    }}
-                                                >
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Delete">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => handleDeleteKpi(kpi.id)}
-                                                    color="error"
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Tooltip>
+                                            {isSuperUser ? (
+                                                <>
+                                                    <Tooltip title="Edit KPI">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedKpi(kpi);
+                                                                setKpiDialogOpen(true);
+                                                            }}
+                                                            sx={{ color: '#3b82f6', '&:hover': { backgroundColor: '#eff6ff' } }}
+                                                        >
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Delete KPI">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleDeleteKpi(kpi.id)}
+                                                            sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </>
+                                            ) : (
+                                                <Tooltip title="View only - Contact administrator to modify">
+                                                    <IconButton size="small" disabled>
+                                                        <VisibilityIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -722,35 +847,43 @@ const Sources = () => {
 
                 {/* Tool Management Tab */}
                 <TabPanel value={currentTab} index={1}>
-                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h6">Security Tools</Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => {
-                                setSelectedTool(null);
-                                setToolDialogOpen(true);
-                            }}
-                        >
-                            Add Tool
-                        </Button>
+                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h5" fontWeight="bold">Security Tools</Typography>
+                        {isSuperUser && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => {
+                                    setSelectedTool(null);
+                                    setToolDialogOpen(true);
+                                }}
+                                sx={{ 
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                                    }
+                                }}
+                            >
+                                Add Tool
+                            </Button>
+                        )}
                     </Box>
 
-                    <TableContainer>
+                    <TableContainer sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                         <Table>
                             <TableHead>
-                                <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Category</TableCell>
-                                    <TableCell>Type</TableCell>
-                                    <TableCell>Vendor</TableCell>
-                                    <TableCell>Version</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                <TableRow sx={{ backgroundColor: '#f8fafc' }}>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Category</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Type</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Vendor</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Version</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {tools && tools.map((tool) => (
-                                    <TableRow key={tool.id} hover>
+                                    <TableRow key={tool.id} hover sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
                                         <TableCell>
                                             <Box>
                                                 <Typography variant="body1" fontWeight="medium">
@@ -768,36 +901,56 @@ const Sources = () => {
                                                 sx={{
                                                     backgroundColor: getCategoryColor(tool.category),
                                                     color: 'white',
-                                                    textTransform: 'capitalize'
+                                                    textTransform: 'capitalize',
+                                                    fontWeight: 'medium'
                                                 }}
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Chip label={tool.type.replace('_', ' ')} size="small" variant="outlined" />
+                                            <Chip 
+                                                label={tool.type.replace('_', ' ')} 
+                                                size="small" 
+                                                sx={{
+                                                    backgroundColor: getTypeColor(tool.type),
+                                                    color: 'white',
+                                                    textTransform: 'capitalize'
+                                                }}
+                                            />
                                         </TableCell>
                                         <TableCell>{tool.vendor || 'N/A'}</TableCell>
                                         <TableCell>{tool.version || 'N/A'}</TableCell>
                                         <TableCell>
-                                            <Tooltip title="Edit">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => {
-                                                        setSelectedTool(tool);
-                                                        setToolDialogOpen(true);
-                                                    }}
-                                                >
-                                                    <EditIcon />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Delete">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => handleDeleteTool(tool.id)}
-                                                    color="error"
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Tooltip>
+                                            {isSuperUser ? (
+                                                <>
+                                                    <Tooltip title="Edit Tool">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setSelectedTool(tool);
+                                                                setToolDialogOpen(true);
+                                                            }}
+                                                            sx={{ color: '#3b82f6', '&:hover': { backgroundColor: '#eff6ff' } }}
+                                                        >
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Delete Tool">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleDeleteTool(tool.id)}
+                                                            sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </>
+                                            ) : (
+                                                <Tooltip title="View only - Contact administrator to modify">
+                                                    <IconButton size="small" disabled>
+                                                        <VisibilityIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -806,63 +959,75 @@ const Sources = () => {
                     </TableContainer>
                 </TabPanel>
 
-                {/* Configuration Tab */}
+                {/* Statistics Tab */}
                 <TabPanel value={currentTab} index={2}>
-                    <Typography variant="h6" gutterBottom>
-                        Dashboard Configuration
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        Dashboard Statistics
                     </Typography>
 
-                    <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant="subtitle1">KPI Distribution by Level</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {stats && (
-                                <Grid container spacing={2}>
-                                    {Object.entries(stats.kpis.by_level).map(([level, count]) => (
-                                        <Grid item xs={12} sm={4} key={level}>
-                                            <Card variant="outlined">
-                                                <CardContent>
-                                                    <Typography variant="h6" color={getLevelColor(level)}>
-                                                        {count}
-                                                    </Typography>
-                                                    <Typography variant="body2" textTransform="capitalize">
-                                                        {level} KPIs
-                                                    </Typography>
-                                                </CardContent>
-                                            </Card>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12} md={6}>
+                            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
+                                <CardContent>
+                                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: '#374151' }}>
+                                        KPI Distribution by Level
+                                    </Typography>
+                                    {stats && (
+                                        <Grid container spacing={2}>
+                                            {Object.entries(stats.kpis.by_level).map(([level, count]) => (
+                                                <Grid item xs={12} key={level}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, backgroundColor: '#f8fafc', borderRadius: 2 }}>
+                                                        <Typography variant="body1" textTransform="capitalize" fontWeight="medium">
+                                                            {level} KPIs
+                                                        </Typography>
+                                                        <Chip
+                                                            label={count}
+                                                            sx={{
+                                                                backgroundColor: getLevelColor(level),
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                </Grid>
+                                            ))}
                                         </Grid>
-                                    ))}
-                                </Grid>
-                            )}
-                        </AccordionDetails>
-                    </Accordion>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Grid>
 
-                    <Accordion>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant="subtitle1">Tools by Category</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {stats && (
-                                <Grid container spacing={2}>
-                                    {Object.entries(stats.tools.by_category).map(([category, count]) => (
-                                        <Grid item xs={12} sm={6} md={4} key={category}>
-                                            <Card variant="outlined">
-                                                <CardContent>
-                                                    <Typography variant="h6" color={getCategoryColor(category)}>
-                                                        {count}
-                                                    </Typography>
-                                                    <Typography variant="body2" textTransform="capitalize">
-                                                        {category.replace('_', ' ')}
-                                                    </Typography>
-                                                </CardContent>
-                                            </Card>
+                        <Grid item xs={12} md={6}>
+                            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
+                                <CardContent>
+                                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: '#374151' }}>
+                                        Tools by Category
+                                    </Typography>
+                                    {stats && (
+                                        <Grid container spacing={2}>
+                                            {Object.entries(stats.tools.by_category).map(([category, count]) => (
+                                                <Grid item xs={12} key={category}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, backgroundColor: '#f8fafc', borderRadius: 2 }}>
+                                                        <Typography variant="body1" textTransform="capitalize" fontWeight="medium">
+                                                            {category.replace('_', ' ')}
+                                                        </Typography>
+                                                        <Chip
+                                                            label={count}
+                                                            sx={{
+                                                                backgroundColor: getCategoryColor(category),
+                                                                color: 'white',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                </Grid>
+                                            ))}
                                         </Grid>
-                                    ))}
-                                </Grid>
-                            )}
-                        </AccordionDetails>
-                    </Accordion>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
                 </TabPanel>
             </Paper>
 

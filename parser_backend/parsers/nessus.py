@@ -1,7 +1,5 @@
 import xml.etree.ElementTree as ET
-import json
 import re
-from datetime import datetime
 from typing import Dict, List, Optional, Any, Generator
 from dataclasses import dataclass, asdict
 
@@ -63,6 +61,75 @@ class NessusParser:
         """
         self.max_findings = max_findings
         self.findings_count = 0
+    
+    def check_nessus_v2_format(self, xml_content: str) -> bool:
+        """
+        Check if the XML content is in Nessus v2 format.
+        
+        Args:
+            xml_content: The XML content to check
+            
+        Returns:
+            bool: True if the content appears to be a Nessus v2 report
+        """
+        # Check for Nessus v2 specific markers
+        nessus_markers = [
+            "<NessusClientData_v2",
+            "<Report",
+            "<ReportHost",
+            "<ReportItem",
+            "pluginID=",
+            "pluginName="
+        ]
+        
+        # Content should contain multiple Nessus-specific markers
+        marker_count = sum(1 for marker in nessus_markers if marker in xml_content)
+        
+        # Additional checks for common Nessus elements
+        has_policy = "<Policy>" in xml_content or "policy" in xml_content.lower()
+        has_preferences = "<Preferences>" in xml_content or "preference" in xml_content.lower()
+        has_plugin_output = "plugin_output" in xml_content
+        
+        # Must have at least 3 markers and some Nessus-specific content
+        is_nessus = marker_count >= 3 and (has_policy or has_preferences or has_plugin_output)
+        
+        logger.info(f"Nessus format check: {marker_count} markers found, is_nessus: {is_nessus}")
+        return is_nessus
+    
+    def validate_xml_structure(self, root: ET.Element) -> bool:
+        """
+        Validate that the XML has the expected Nessus structure.
+        
+        Args:
+            root: The XML root element
+            
+        Returns:
+            bool: True if the structure is valid for Nessus
+        """
+        # Check for required Nessus elements
+        report_hosts = root.findall(".//ReportHost")
+        if not report_hosts:
+            logger.warning("No ReportHost elements found - not a valid Nessus report")
+            return False
+        
+        # Check for at least one ReportItem
+        report_items = root.findall(".//ReportItem")
+        if not report_items:
+            logger.warning("No ReportItem elements found - not a valid Nessus report")
+            return False
+        
+        # Check for plugin attributes in ReportItems
+        has_plugin_attrs = any(
+            item.get("pluginID") and item.get("pluginName") 
+            for item in report_items[:5]  # Check first 5 items
+        )
+        
+        if not has_plugin_attrs:
+            logger.warning("No plugin attributes found in ReportItems - not a valid Nessus report")
+            return False
+        
+        logger.info(f"Valid Nessus structure: {len(report_hosts)} hosts, {len(report_items)} items")
+        return True
         
     def parse_report(self, file_content: str, filename: str) -> List[Dict[str, Any]]:
         """
@@ -74,25 +141,57 @@ class NessusParser:
             
         Returns:
             List of findings dictionaries
+            
+        Raises:
+            ValueError: If the file is not a valid Nessus v2 report
         """
         try:
-            # Parse XML with iterparse for better memory efficiency
-            root = ET.fromstring(file_content)
+            # First, check if this is a Nessus v2 format file
+            if not self.check_nessus_v2_format(file_content):
+                raise ValueError(
+                    f"File '{filename}' does not appear to be a valid Nessus v2 report. "
+                    "Please ensure you're uploading a Nessus XML export file."
+                )
+            
+            # Parse XML
+            try:
+                root = ET.fromstring(file_content)
+            except ET.ParseError as e:
+                logger.error(f"XML parsing failed for {filename}: {str(e)}")
+                raise ValueError(f"Invalid XML format in '{filename}': {str(e)}")
+            
+            # Validate XML structure
+            if not self.validate_xml_structure(root):
+                raise ValueError(
+                    f"File '{filename}' does not have valid Nessus report structure. "
+                    "Please check that this is a properly exported Nessus XML file."
+                )
+            
+            # Parse findings
             findings = list(self._parse_findings(root))
+            
+            if not findings:
+                logger.warning(f"No findings extracted from {filename}")
+                # Don't raise an error for empty reports, just return empty list
+                return []
             
             logger.info(f"Successfully parsed {len(findings)} findings from {filename}")
             return findings
             
-        except ET.ParseError as e:
-            logger.error(f"Invalid XML in {filename}: {str(e)}")
-            raise ValueError(f"Invalid XML file: {str(e)}")
+        except ValueError:
+            # Re-raise validation errors
+            raise
         except Exception as e:
-            logger.error(f"Error parsing {filename}: {str(e)}")
-            raise ValueError(f"Error parsing Nessus file: {str(e)}")
+            logger.error(f"Unexpected error parsing {filename}: {str(e)}")
+            raise ValueError(f"Error parsing Nessus file '{filename}': {str(e)}")
     
     def _parse_findings(self, root: ET.Element) -> Generator[Dict[str, Any], None, None]:
         """Generate findings from the XML root element"""
         report_hosts = root.findall(".//ReportHost")
+        
+        if not report_hosts:
+            logger.warning("No ReportHost elements found")
+            return
         
         for report_host in report_hosts:
             # Extract host information
@@ -119,7 +218,6 @@ class NessusParser:
                 if finding:
                     self.findings_count += 1
                     yield finding.to_dict()
-                    #############################################
     
     def _extract_host_info(self, report_host: ET.Element) -> Dict[str, Optional[str]]:
         """Extract host information from ReportHost element"""

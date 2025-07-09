@@ -365,7 +365,11 @@ async def upload_file(
             )
             
             if response.status_code != 200:
-                error_detail = f"Parser service error: {response.status_code}"
+                try:
+                    # Try to extract the parser's error detail
+                    error_detail = response.json().get("detail", "Unknown parser error")
+                except:
+                    error_detail = response.text  # Fallback to raw response
                 logger.error(error_detail)
                 db_file.status = "failed"
                 db.commit()
@@ -381,7 +385,10 @@ async def upload_file(
                 db.add(error_log)
                 db.commit()
                 
-                raise HTTPException(status_code=500, detail=error_detail)
+                raise HTTPException(
+                    status_code=response.status_code,  # Preserve original status code
+                    detail=error_detail  # Forward the parser's error message
+                )
             
             # Parse response - expecting list of normalized findings
             findings = response.json()["findings"]

@@ -67,19 +67,24 @@ const FileUpload = () => {
       setFile(null);
       // Reset the file input
       event.target.reset();
-      
+
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to upload file');
-      console.error('Error uploading file:', err);
-    } finally {
-      setLoading(false);
+      // Handle parser validation errors (400) differently
+      if (err.response?.status === 400) {
+        setError(err.response?.data?.detail || 'Invalid file format');
+      }
+      // Handle other errors
+      else {
+        setError(err.response?.data?.detail || 'Failed to upload file');
+      }
+      console.error('Upload error:', err.response?.data || err.message);
     }
   };
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-6">Upload Security Report</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="tool" className="block text-sm font-medium text-gray-700">
@@ -130,11 +135,10 @@ const FileUpload = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-            loading
+          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${loading
               ? 'bg-indigo-400 cursor-not-allowed'
               : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-          }`}
+            }`}
         >
           {loading ? 'Uploading...' : 'Upload'}
         </button>
