@@ -33,7 +33,6 @@ async def lifespan(_: FastAPI):
     yield
     print("👋 Application shutdown")
 
-# ✅ FIXED: Single FastAPI app declaration
 app = FastAPI(
     title="Security Dashboard API", 
     lifespan=lifespan,
@@ -42,7 +41,7 @@ app = FastAPI(
 )
 add_security_headers(app)
 
-# ✅ FIXED: Add rate limiting to main app
+# rate limiting to main app
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 

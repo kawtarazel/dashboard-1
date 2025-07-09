@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { api } from '../../services/api';
+import api from '../../services/api';
 
 const FileList = () => {
   const [files, setFiles] = useState([]);
@@ -10,7 +10,7 @@ const FileList = () => {
 
   const fetchFiles = async () => {
     try {
-      const response = await api.get('/dashboard/files', {
+      const response = await api.get('api/dashboard/files', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFiles(response.data);

@@ -13,3 +13,4 @@ fastapi-jwt-auth
 pydantic_settings
 slowapi==0.1.9
 validators==0.20.0
+httpx

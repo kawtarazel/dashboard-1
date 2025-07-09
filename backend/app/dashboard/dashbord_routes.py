@@ -7,6 +7,7 @@ import json
 from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from . import models, schemas
 from .database import get_db
@@ -300,17 +301,25 @@ async def get_dashboard_stats(
         raise HTTPException(status_code=500, detail=f"Error fetching dashboard stats: {str(e)}")
 
 # ==================== FILE MANAGEMENT ====================
+from fastapi import Request, Header
 
 UPLOAD_DIR = "uploads"
 PARSER_SERVICE_URL = "http://parser_backend:8001"  # Update with your parser service URL
+import logging
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+# Updated upload_file function in dashboard_routes.py
 @router.post("/files/upload", response_model=schemas.FileResponse)
 async def upload_file(
     file: UploadFile = File(...),
     tool_id: int = Query(..., description="ID of the tool to use for parsing"),
     db: Session = Depends(get_db),
-    current_user: auth_models.User = Depends(get_current_user)
+    current_user: auth_models.User = Depends(get_current_user),
+    authorization: str = Header(None)
 ):
+    """Upload and parse a security report file"""
     # Create uploads directory if it doesn't exist
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     
@@ -341,6 +350,7 @@ async def upload_file(
     db.refresh(db_file)
     
     # Send to parser service asynchronously
+    token = authorization.split(" ")[1] if authorization else None
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -348,49 +358,103 @@ async def upload_file(
                 json={
                     "file_id": db_file.id,
                     "tool_id": tool_id,
-                    "user_id": current_user.id
-                }
+                    "user_id": current_user.id,
+                    "auth_token": token
+                },
+                timeout=300.0  # 5 minutes timeout for parsing
             )
+            
             if response.status_code != 200:
-                raise HTTPException(status_code=500, detail="Parser service error")
-            
-            findings = response.json()
-            if not isinstance(findings, list):
-                raise HTTPException(status_code=500, detail="Invalid response from parser service")
-            
-            for finding in findings:
-                db_log = models.Log(
+                error_detail = f"Parser service error: {response.status_code}"
+                logger.error(error_detail)
+                db_file.status = "failed"
+                db.commit()
+                
+                # Create error log
+                error_log = models.Log(
                     file_id=db_file.id,
                     tool_id=tool_id,
-                    status="success",
-                    message=f"Parsed {file.filename} with tool ID {tool_id}",
-                    raw_data=json.dumps(finding),  # Store raw data from the tool
-                    parsed_data=json.dumps(finding),  # Store JSON results
-                    event_time=finding.get("event_time", datetime.utcnow()),
-                    action=finding.get("action"),
-                    attack_type=finding.get("attack_type"),
-                    policy=finding.get("policy"),
-                    bandwidth=finding.get("bandwidth"),
-                    ip_source=finding.get("ip_source"),
-                    ip_destination=finding.get("ip_destination"),
-                    severity=finding.get("severity"),
-                    cvss_base_score=finding.get("cvss_base_score"),
-                    vulnerability_name=finding.get("vulnerability_name"),
-                    malware_type=finding.get("malware_type"),
-                    quarantine_status=finding.get("quarantine_status"),
-                    log_type=finding.get("log_type"),
-                    app_name=finding.get("app_name"),
-                    country_code=finding.get("country_code")
+                    status="failed",
+                    message=error_detail,
+                    raw_data=response.text
                 )
+                db.add(error_log)
+                db.commit()
+                
+                raise HTTPException(status_code=500, detail=error_detail)
+            
+            # Parse response - expecting list of normalized findings
+            findings = response.json()["findings"]
+            if not isinstance(findings, list):
+                error_msg = "Invalid response format from parser service"
+                logger.error(error_msg)
+                db_file.status = "failed"
+                db.commit()
+                raise HTTPException(status_code=500, detail=error_msg)
+            
+            # Store findings in database
+            for parsed_finding in findings:  # findings is now a list of {raw_finding, normalized_finding}
+                try:
+                    raw_data = parsed_finding["raw_finding"]
+                    normalized_data = parsed_finding["normalized_finding"]
 
-            db.add(db_log)
+                    # Convert datetime if present (from normalized data)
+                    event_time = None
+                    if normalized_data.get("event_time"):
+                        try:
+                            event_time = datetime.fromisoformat(normalized_data["event_time"])
+                        except ValueError:
+                            logger.warning(f"Invalid event_time format: {normalized_data['event_time']}")
+
+                    # Create log entry
+                    db_log = models.Log(
+                        file_id=db_file.id,
+                        tool_id=tool_id,
+                        status="success",
+                        message=f"Parsed {file.filename} with tool ID {tool_id}",
+                        raw_data=json.dumps(raw_data),          # Store original finding
+                        parsed_data=json.dumps(normalized_data), # Store normalized data
+                        event_time=event_time,
+                        # Map normalized fields to database columns
+                        action=normalized_data.get("action"),
+                        attack_type=normalized_data.get("attack_type"),
+                        policy=normalized_data.get("policy"),
+                        bandwidth=normalized_data.get("bandwidth"),
+                        ip_source=normalized_data.get("ip_source"),
+                        ip_destination=normalized_data.get("ip_destination"),
+                        severity=normalized_data.get("severity"),
+                        cvss_base_score=normalized_data.get("cvss_base_score"),
+                        vulnerability_name=normalized_data.get("vulnerability_name"),
+                        malware_type=normalized_data.get("malware_type"),
+                        quarantine_status=normalized_data.get("quarantine_status"),
+                        log_type=normalized_data.get("log_type"),
+                        app_name=normalized_data.get("app_name"),
+                        country_code=normalized_data.get("country_code")
+                    )
+                    db.add(db_log)
+                    
+                except Exception as e:
+                    logger.error(f"Error storing finding: {str(e)}")
+                    continue
+            
+            # Update file status to processed
+            db_file.status = "processed"
             db.commit()
             
-    except Exception as e:
-        # Update file status to failed
+            logger.info(f"Successfully processed {len(findings)} findings from {file.filename}")
+            
+    except httpx.TimeoutException:
+        error_msg = "Parser service timeout"
+        logger.error(error_msg)
         db_file.status = "failed"
         db.commit()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=504, detail=error_msg)
+    except Exception as e:
+        error_msg = f"Error processing file: {str(e)}"
+        logger.error(error_msg)
+        db_file.status = "failed"
+        db.commit()
+        raise HTTPException(status_code=500, detail=error_msg)
     
     return db_file
 
@@ -403,6 +467,18 @@ async def list_files(
 ):
     files = db.query(models.File).offset(skip).limit(limit).all()
     return files
+
+@router.get("/files/{file_id}", response_model=schemas.FileResponse)
+async def get_file(
+    file_id: int,
+    db: Session = Depends(get_db),
+    current_user: auth_models.User = Depends(get_current_user)
+):
+    """Get specific file by ID"""
+    file = db.query(models.File).filter(models.File.id == file_id).first()
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    return file
 
 @router.get("/files/{file_id}/logs", response_model=List[schemas.LogResponse])
 async def get_file_logs(

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { api } from '../../services/api';
+import api from '../../services/api';
 
 const FileUpload = () => {
   const [file, setFile] = useState(null);
   const [tools, setTools] = useState([]);
-  const [selectedTool, setSelectedTool] = useState('');
+  const [selectedTool, setSelectedTool] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -15,7 +15,7 @@ const FileUpload = () => {
     // Fetch available tools when component mounts
     const fetchTools = async () => {
       try {
-        const response = await api.get('/dashboard/tools', {
+        const response = await api.get('api/dashboard/tools', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTools(response.data);
@@ -36,7 +36,7 @@ const FileUpload = () => {
   };
 
   const handleToolChange = (event) => {
-    setSelectedTool(event.target.value);
+    setSelectedTool(parseInt(event.target.value));
     setError('');
   };
 
@@ -53,10 +53,10 @@ const FileUpload = () => {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('tool_id', selectedTool);
 
     try {
-      const response = await api.post('/dashboard/files/upload', formData, {
+      console.log('tool id : ', selectedTool);
+      const response = await api.post(`api/dashboard/files/upload?tool_id=${selectedTool}`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

@@ -51,6 +51,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - uploaded_files:/app/uploads  # Shared volume for uploaded files
     env_file:
       - .env
     environment:
@@ -117,15 +118,32 @@ services:
 
   parser_backend:
     build:
-      context: .
-      dockerfile: parser_backend/Dockerfile
+      context: ./parser_backend
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"  # Expose parser service port
     volumes:
       - ./parser_backend:/app
-    command: ["python", "main.py"]
-    networks:
-      - dashboard-net
+      - uploaded_files:/app/uploads  # Shared volume for uploaded files
+    env_file:
+      - .env
+    environment:
+      - DASHBOARD_POSTGRES_HOST=${DASHBOARD_POSTGRES_HOST}
+      - DASHBOARD_POSTGRES_PORT=${DASHBOARD_POSTGRES_PORT}
+      - DASHBOARD_POSTGRES_USER=${DASHBOARD_POSTGRES_USER}
+      - DASHBOARD_POSTGRES_PASSWORD=${DASHBOARD_POSTGRES_PASSWORD}
+      - DASHBOARD_POSTGRES_DB=${DASHBOARD_POSTGRES_DB}
+      - CORS_ORIGINS=${CORS_ORIGINS}
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - dashboard-net
 
 networks:
   dashboard-net:
@@ -134,3 +152,4 @@ networks:
 volumes:
   postgres_auth_data:
   postgres_dashboard_data:
+  uploaded_files:  # Shared volume for file uploads

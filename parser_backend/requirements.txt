@@ -1,13 +1,12 @@
-# requirements.txt for parser_backend
-# Add your dependencies here, for example:
-
 # Core dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+pydantic_settings==2.1.0
+httpx==0.25.2
 
-# If you use any of these, uncomment as needed:
-# pydantic
-# requests
-# loguru
+# For logging and utilities
+python-multipart==0.0.6
 
-# Example:
-# pydantic==2.6.4
-# requests==2.31.0
+# For datetime handling
+python-dateutil==2.8.2
