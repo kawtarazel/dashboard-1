@@ -48,31 +48,49 @@ class Tool(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     updated_by = Column(Integer, nullable=True)
     
-class Log(Base):
-    __tablename__ = "logs"
-
-    id = Column(Integer, primary_key=True, index=True)
-    tool_id = Column(Integer, ForeignKey("tools.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    raw_data = Column(String, nullable=False)
-    processed_data = Column(String, nullable=True)
-    file_id = Column(Integer, ForeignKey("files.id"), nullable=True)
-    # Additional fields for metrics
-    # metrics ...
-    
-    tool = relationship("Tool", back_populates="logs")
-    file = relationship("File", back_populates="logs")
-
-Tool.logs = relationship("Log", order_by=Log.created_at, back_populates="tool")
-
 class File(Base):
     __tablename__ = "files"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    path = Column(String, nullable=False)
-    size = Column(Integer, nullable=False)
+    filename = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)
+    uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    created_by = Column(Integer, nullable=False)
+    size = Column(Integer, nullable=False)
+    status = Column(String, nullable=False, default="pending")  # pending, processed, failed
+    md5_hash = Column(String, nullable=False)
 
+    # Relationships
     logs = relationship("Log", back_populates="file")
+
+class Log(Base):
+    __tablename__ = "logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    file_id = Column(Integer, ForeignKey("files.id"), nullable=False)
+    tool_id = Column(Integer, ForeignKey("tools.id"), nullable=False)
+    status = Column(String, nullable=False)  # success, failed
+    message = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    raw_data = Column(String, nullable=True)  # Store raw data from the tool
+    parsed_data = Column(String, nullable=True)  # Store JSON results
+    event_time = Column(DateTime(timezone=True), nullable=True)
+    action = Column(String, nullable=True)
+    attack_type = Column(String, nullable=True)
+    policy = Column(String, nullable=True)
+    bandwidth = Column(Float, nullable=True)  # e.g., in Mbps
+    ip_source = Column(String, nullable=True)  # Source IP address
+    ip_destination = Column(String, nullable=True)  # Destination IP address
+    severity = Column(String, nullable=True)  # e.g., low, medium, high
+    cvss_base_score = Column(Float, nullable=True)  # Common Vulnerability Scoring System score
+    vulnerability_name = Column(String, nullable=True)  # Name of the vulnerability
+    malware_type = Column(String, nullable=True)  # Type of malware detected
+    quarantine_status = Column(String, nullable=True)  # e.g., quarantined, not quarantined
+    log_type = Column(String, nullable=True)
+    app_name = Column(String, nullable=True) 
+    country_code = Column(String, nullable=True)
+
+    # Relationships
+    file = relationship("File", back_populates="logs")
+    tool = relationship("Tool", backref="logs")

@@ -1,6 +1,9 @@
 # backend/app/dashboard/admin_routes.py - NEW FILE
-from fastapi import APIRouter, HTTPException, Depends, status, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, Depends, status, Query, UploadFile, File
+import httpx
+import hashlib
+import os
+import json
 from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import func
@@ -295,3 +298,117 @@ async def get_dashboard_stats(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching dashboard stats: {str(e)}")
+
+# ==================== FILE MANAGEMENT ====================
+
+UPLOAD_DIR = "uploads"
+PARSER_SERVICE_URL = "http://parser_backend:8001"  # Update with your parser service URL
+
+@router.post("/files/upload", response_model=schemas.FileResponse)
+async def upload_file(
+    file: UploadFile = File(...),
+    tool_id: int = Query(..., description="ID of the tool to use for parsing"),
+    db: Session = Depends(get_db),
+    current_user: auth_models.User = Depends(get_current_user)
+):
+    # Create uploads directory if it doesn't exist
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    
+    # Read and save file
+    contents = await file.read()
+    file_hash = hashlib.md5(contents).hexdigest()
+    
+    # Create file path
+    file_ext = os.path.splitext(file.filename)[1]
+    file_path = os.path.join(UPLOAD_DIR, f"{file_hash}{file_ext}")
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(contents)
+    
+    # Create file record
+    db_file = models.File(
+        filename=file.filename,
+        file_path=file_path,
+        file_type=file.content_type,
+        uploaded_by=current_user.id,
+        size=len(contents),
+        status="pending",
+        md5_hash=file_hash
+    )
+    db.add(db_file)
+    db.commit()
+    db.refresh(db_file)
+    
+    # Send to parser service asynchronously
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{PARSER_SERVICE_URL}/parse",
+                json={
+                    "file_id": db_file.id,
+                    "tool_id": tool_id,
+                    "user_id": current_user.id
+                }
+            )
+            if response.status_code != 200:
+                raise HTTPException(status_code=500, detail="Parser service error")
+            
+            findings = response.json()
+            if not isinstance(findings, list):
+                raise HTTPException(status_code=500, detail="Invalid response from parser service")
+            
+            for finding in findings:
+                db_log = models.Log(
+                    file_id=db_file.id,
+                    tool_id=tool_id,
+                    status="success",
+                    message=f"Parsed {file.filename} with tool ID {tool_id}",
+                    raw_data=json.dumps(finding),  # Store raw data from the tool
+                    parsed_data=json.dumps(finding),  # Store JSON results
+                    event_time=finding.get("event_time", datetime.utcnow()),
+                    action=finding.get("action"),
+                    attack_type=finding.get("attack_type"),
+                    policy=finding.get("policy"),
+                    bandwidth=finding.get("bandwidth"),
+                    ip_source=finding.get("ip_source"),
+                    ip_destination=finding.get("ip_destination"),
+                    severity=finding.get("severity"),
+                    cvss_base_score=finding.get("cvss_base_score"),
+                    vulnerability_name=finding.get("vulnerability_name"),
+                    malware_type=finding.get("malware_type"),
+                    quarantine_status=finding.get("quarantine_status"),
+                    log_type=finding.get("log_type"),
+                    app_name=finding.get("app_name"),
+                    country_code=finding.get("country_code")
+                )
+
+            db.add(db_log)
+            db.commit()
+            
+    except Exception as e:
+        # Update file status to failed
+        db_file.status = "failed"
+        db.commit()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return db_file
+
+@router.get("/files", response_model=List[schemas.FileResponse])
+async def list_files(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, le=1000),
+    db: Session = Depends(get_db),
+    current_user: auth_models.User = Depends(get_current_user)
+):
+    files = db.query(models.File).offset(skip).limit(limit).all()
+    return files
+
+@router.get("/files/{file_id}/logs", response_model=List[schemas.LogResponse])
+async def get_file_logs(
+    file_id: int,
+    db: Session = Depends(get_db),
+    current_user: auth_models.User = Depends(get_current_user)
+):
+    logs = db.query(models.Log).filter(models.Log.file_id == file_id).all()
+    return logs

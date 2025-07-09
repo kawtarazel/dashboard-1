@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutGrid, Settings, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutGrid, Settings, Globe, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Accepts activeItem (string or number) and onSelect (function) as props
 function DashboardSidebar({ activeItem, onSelect }) {
@@ -20,6 +20,11 @@ function DashboardSidebar({ activeItem, onSelect }) {
       id: 2,
       label: 'Sources',
       icon: Globe
+    },
+    {
+      id: 3,
+      label: 'Files',
+      icon: FileText
     }
   ];
 

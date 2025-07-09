@@ -5,24 +5,24 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any, Generator
 from dataclasses import dataclass, asdict
 
-from ..core import setup_logging
-
-logger = 
+import logging
+from core.logging import setup_logger
+logger = setup_logger(__name__, level=logging.INFO)
 
 @dataclass
 class NessusFinding:
     """Data class for Nessus findings with validation"""
     host_fqdn: Optional[str] = None
     mac_address: Optional[str] = None
-    host_ip: Optional[str] = None
+    ip_source: Optional[str] = None
     host_os: Optional[str] = None
-    scan_start_date: Optional[str] = None
+    event_time: Optional[str] = None
     scan_duration: Optional[str] = None
     scanner_ip: Optional[str] = None
-    plugin_name: Optional[str] = None
+    vulnerability_name: Optional[str] = None
     plugin_id: Optional[str] = None
     severity: str = "Info"
-    cvss_score: float = 0.0
+    cvss_base_score: float = 0.0
     exploitable: bool = False
     metasploit_available: bool = False
     metasploit_name: Optional[str] = None
@@ -125,18 +125,18 @@ class NessusParser:
         """Extract host information from ReportHost element"""
         host_info = {
             "host_fqdn": None,
-            "host_ip": None,
+            "ip_source": None,
             "mac_address": None,
             "host_os": None
         }
         
         # First check attributes
-        host_info["host_ip"] = report_host.get("name")
+        host_info["ip_source"] = report_host.get("name")
         
         # Then check tags
         tag_mapping = {
             "host-fqdn": "host_fqdn",
-            "host-ip": "host_ip",
+            "host-ip": "ip_source",
             "mac-address": "mac_address",
             "operating-system": "host_os"
         }
@@ -151,7 +151,7 @@ class NessusParser:
     def _extract_scan_info(self, report_host: ET.Element) -> Dict[str, Optional[str]]:
         """Extract scan information from ReportHost element"""
         scan_info = {
-            "scan_start_date": None,
+            "event_time": None,
             "scan_duration": None,
             "scanner_ip": None
         }
@@ -159,7 +159,7 @@ class NessusParser:
         # Extract from tags
         for tag in report_host.findall(".//tag"):
             if tag.get("name") == "HOST_START":
-                scan_info["scan_start_date"] = tag.text
+                scan_info["event_time"] = tag.text
         
         # Extract from Nessus Scan Information plugin if present
         scan_info_item = report_host.find(".//ReportItem[@pluginName='Nessus Scan Information']")
@@ -189,7 +189,7 @@ class NessusParser:
             severity = self.SEVERITY_MAP.get(severity_num, "Info")
             
             # Extract vulnerability details
-            plugin_name = report_item.get("pluginName", "Unknown")
+            vulnerability_name = report_item.get("pluginName", "Unknown")
             plugin_id = report_item.get("pluginID", "")
             port = report_item.get("port", "0")
             protocol = report_item.get("protocol", "")
@@ -209,10 +209,10 @@ class NessusParser:
             details = "\n\n".join(details_parts) if details_parts else None
             
             # Extract CVSS score
-            cvss_score = 0.0
+            cvss_base_score = 0.0
             cvss_text = report_item.findtext("cvss_base_score", "0.0")
             try:
-                cvss_score = float(cvss_text)
+                cvss_base_score = float(cvss_text)
             except ValueError:
                 logger.warning(f"Invalid CVSS score: {cvss_text}")
             
@@ -227,10 +227,10 @@ class NessusParser:
             finding = NessusFinding(
                 **host_info,
                 **scan_info,
-                plugin_name=plugin_name,
+                vulnerability_name=vulnerability_name,
                 plugin_id=plugin_id,
                 severity=severity,
-                cvss_score=cvss_score,
+                cvss_base_score=cvss_base_score,
                 exploitable=exploit_available,
                 metasploit_available=metasploit_available,
                 metasploit_name=metasploit_name,
@@ -246,45 +246,3 @@ class NessusParser:
         except Exception as e:
             logger.error(f"Error creating finding: {str(e)}")
             return None
-
-# # Backward compatible function
-# def parse_nessus_report(file_content: str, filename: str, max_findings: Optional[int] = None) -> List[Dict[str, Any]]:
-#     """
-#     Parse a Nessus XML report and return findings.
-#     Backward compatible wrapper for the NessusParser class.
-    
-#     Args:
-#         file_content: The content of the Nessus XML file
-#         filename: The name of the file being parsed
-#         max_findings: Maximum number of findings to return
-        
-#     Returns:
-#         List of findings dictionaries
-#     """
-#     parser = NessusParser(max_findings=max_findings)
-#     return parser.parse_report(file_content, filename)
-
-# if __name__ == "__main__":
-#     try:
-#         # Initialize report
-#         report = []
-        
-#         # Use pathlib for cross-platform path handling
-#         input_path = Path("C:/Users/USER/Documents/log samples/nessus_v_unknown.nessus")
-#         output_path = "report.json"
-        
-#         # Read the file with explicit encoding
-#         with open(input_path, "r", encoding='utf-8') as f:
-#             content = f.read()
-        
-#         # Parse the report (assuming parse_nessus_report is defined elsewhere)
-#         findings = parse_nessus_report(content, str(input_path), max_findings=1000)
-#         report.extend(findings)  # More efficient than append in loop
-        
-#         # Save to JSON file
-#         save_to_json(report, str(output_path))
-        
-#     except FileNotFoundError:
-#         logger.error(f"Input file not found: {input_path}")
-#     except Exception as e:
-#         logger.error(f"Error processing report: {str(e)}", exc_info=True)

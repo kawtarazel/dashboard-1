@@ -3,6 +3,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardContent from './dashboard/Dashboard_KPI';
 import AdminDashboard from './admin/AdminDashboard';
 import Sources from './Sources';
+import FilesPage from './dashboard/FilesPage';
 import { useEffect, useState } from 'react';
 
 function DashboardLayout({user, loading, user_role, fetchUserRole}) {
@@ -31,17 +32,13 @@ function DashboardLayout({user, loading, user_role, fetchUserRole}) {
                 <DashboardContent user={user} user_role={user_role} loading={loading} />
               )
             )
-          ) : (
-            activeItem === 2 ? (
-              <Sources />
-            )
-              : (
-                <div className='flex items-center justify-center h-full'>
-                  <h2 className='text-2xl font-semibold'>Settings Page</h2>
-                </div>
-              )
-          )
-          }
+          ) : activeItem === 1 ? (
+            <div>Settings</div>
+          ) : activeItem === 2 ? (
+            <Sources />
+          ) : activeItem === 3 ? (
+            <FilesPage />
+          ) : null}
         </div>
       </div>
     </div>

@@ -86,20 +86,50 @@ class Tool(ToolBase):
     class Config:
         from_attributes = True
 
-# ==================== LOG SCHEMAS ====================
+# ==================== FILE SCHEMAS ====================
 
-class LogBase(BaseModel):
-    tool_id: int
-    raw_data: str
-    processed_data: Optional[str] = None
-    file_id: Optional[int] = None
+class FileBase(BaseModel):
+    filename: str
+    file_type: str
 
-class LogCreate(LogBase):
+class FileCreate(FileBase):
     pass
 
-class Log(LogBase):
+class FileResponse(FileBase):
     id: int
-    created_at: Optional[datetime] = None
+    file_path: str
+    uploaded_by: int
+    created_at: datetime
+    size: int
+    status: str
+    md5_hash: str
 
     class Config:
         from_attributes = True
+
+# ==================== LOG SCHEMAS ====================
+
+class LogBase(BaseModel):
+    file_id: int
+    tool_id: int
+    status: str
+    message: Optional[str] = None
+    raw_data: Optional[str] = None
+
+class LogCreate(LogBase):
+    parsed_data: Optional[str] = None
+
+class LogResponse(LogBase):
+    id: int
+    created_at: datetime
+    parsed_data: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+# ==================== PARSER REQUEST SCHEMAS ====================
+
+class ParseFileRequest(BaseModel):
+    file_id: int
+    tool_id: int
+    user_id: int
