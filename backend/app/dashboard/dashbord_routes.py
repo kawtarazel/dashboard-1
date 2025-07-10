@@ -495,3 +495,70 @@ async def get_file_logs(
 ):
     logs = db.query(models.Log).filter(models.Log.file_id == file_id).all()
     return logs
+
+# ==================== KPI VALUES ====================
+
+@router.get("/kpi-values")
+async def get_kpi_values(
+    kpi_id: Optional[int] = Query(None, description="Filter by KPI ID"),
+    start_date: Optional[datetime] = Query(None, description="Start date for filtering"),
+    end_date: Optional[datetime] = Query(None, description="End date for filtering"),
+    limit: int = Query(100, le=1000),
+    db: Session = Depends(get_db),
+    current_user: auth_models.User = Depends(get_current_user)
+):
+    """Get KPI values with filtering options"""
+    
+    query = db.query(models.KPIValue).join(models.KPI)
+    
+    if kpi_id:
+        query = query.filter(models.KPIValue.kpi_id == kpi_id)
+    
+    if start_date:
+        query = query.filter(models.KPIValue.timestamp >= start_date)
+    
+    if end_date:
+        query = query.filter(models.KPIValue.timestamp <= end_date)
+    
+    # Order by timestamp descending
+    kpi_values = query.order_by(models.KPIValue.timestamp.desc()).limit(limit).all()
+    
+    # Format response
+    result = []
+    for kpi_value in kpi_values:
+        result.append({
+            "id": kpi_value.id,
+            "kpi_id": kpi_value.kpi_id,
+            "kpi_name": kpi_value.kpi.name,
+            "value": kpi_value.value,
+            "timestamp": kpi_value.timestamp.isoformat(),
+            "kpi_unit": kpi_value.kpi.unit,
+            "kpi_target": kpi_value.kpi.target
+        })
+    
+    return result
+
+@router.get("/kpi-values/{kpi_id}/latest")
+async def get_latest_kpi_value(
+    kpi_id: int,
+    db: Session = Depends(get_db),
+    current_user: auth_models.User = Depends(get_current_user)
+):
+    """Get the latest value for a specific KPI"""
+    
+    kpi_value = db.query(models.KPIValue).filter(
+        models.KPIValue.kpi_id == kpi_id
+    ).order_by(models.KPIValue.timestamp.desc()).first()
+    
+    if not kpi_value:
+        raise HTTPException(status_code=404, detail="No values found for this KPI")
+    
+    return {
+        "id": kpi_value.id,
+        "kpi_id": kpi_value.kpi_id,
+        "kpi_name": kpi_value.kpi.name,
+        "value": kpi_value.value,
+        "timestamp": kpi_value.timestamp.isoformat(),
+        "kpi_unit": kpi_value.kpi.unit,
+        "kpi_target": kpi_value.kpi.target
+    }

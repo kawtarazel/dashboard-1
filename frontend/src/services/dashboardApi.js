@@ -2,14 +2,14 @@ import api from './api';
 
 export const dashboardApi = {
   // ==================== KPI MANAGEMENT ====================
-  
+
   // Get all KPIs for
   getAllKPIs: async (params = {}) => {
     const searchParams = new URLSearchParams();
     if (params.skip) searchParams.append('skip', params.skip);
     if (params.limit) searchParams.append('limit', params.limit);
     if (params.level) searchParams.append('level', params.level);
-    
+
     const response = await api.get(`/api/dashboard/kpis?${searchParams}`);
     return response.data;
   },
@@ -47,7 +47,7 @@ export const dashboardApi = {
     if (params.limit) searchParams.append('limit', params.limit);
     if (params.category) searchParams.append('category', params.category);
     if (params.type) searchParams.append('type', params.type);
-    
+
     const response = await api.get(`/api/dashboard/tools?${searchParams}`);
     return response.data;
   },
@@ -77,12 +77,12 @@ export const dashboardApi = {
     const response = await api.delete(`/api/dashboard/tools/${toolId}`);
     return response.data;
   },
+  
+  // ==================== FILE MANAGEMENT ====================
 
-  // ==================== DASHBOARD STATISTICS ====================
-
-  // Get dashboard statistics
-  getDashboardStats: async () => {
-    const response = await api.get('/api/dashboard/stats');
+  getFile: async (fileId) => {
+    const response = await api.get(`/api/dashboard/files/${fileId}`);
     return response.data;
   }
+
 };
