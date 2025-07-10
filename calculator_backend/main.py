@@ -5,8 +5,8 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from core.logging import setup_logger
-fropm core.database import get_db
-from dashboard.models import KPI, KPIValue, Log
+from core.database import get_db
+from core.database import KPI, KPIValue, Log
 
 # Set up logging
 logger = setup_logger(__name__, level=logging.INFO)
@@ -41,7 +41,8 @@ class KPICalculator:
         calculated_kpis = []
         
         try:
-            
+            # à traiter
+            logger.info("calculer les valeures des kpis\nmessage generer du fichier calculator_backend/main.py ligne 45")
             
         except Exception as e:
             logger.error(f"Error in test KPI calculation: {str(e)}")
