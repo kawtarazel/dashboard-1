@@ -17,7 +17,7 @@ from app.dashboard import models as dashboard_models
 from app.auth.database import engine as auth_engine
 from app.auth import models as auth_models
 
-from .init_db import seed_auth_data
+from .init_db.init_db import seed_data
 from sqlalchemy.orm import Session
 from app.auth.database import SessionLocal
 
@@ -31,7 +31,7 @@ async def lifespan(_: FastAPI):
     dashboard_models.Base.metadata.create_all(bind=dashboard_engine)
     
     print("Seeding initial data...")
-    seed_auth_data()
+    seed_data()
     
     print("Application startup complete!")
     yield

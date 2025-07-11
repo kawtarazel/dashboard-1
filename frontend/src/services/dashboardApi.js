@@ -77,12 +77,19 @@ export const dashboardApi = {
     const response = await api.delete(`/api/dashboard/tools/${toolId}`);
     return response.data;
   },
-  
+
   // ==================== FILE MANAGEMENT ====================
 
   getFile: async (fileId) => {
     const response = await api.get(`/api/dashboard/files/${fileId}`);
     return response.data;
-  }
+  },
 
+  // ==================== DASHBOARD STATISTICS ====================
+
+  // Get dashboard statistics
+  getDashboardStats: async () => {
+    const response = await api.get('/api/dashboard/stats');
+    return response.data;
+  }
 };

@@ -25,8 +25,8 @@ class KPIBase(BaseModel):
 
     @field_validator('frequency')
     def validate_frequency(cls, v):
-        allowed_frequencies = ['real-time', 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly']
-        if v not in allowed_frequencies:
+        allowed_frequencies = ['real-time', 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'annually']
+        if v.lower() not in allowed_frequencies:
             raise ValueError(f'Frequency must be one of: {", ".join(allowed_frequencies)}')
         return v
 
@@ -56,8 +56,9 @@ class ToolBase(BaseModel):
     @field_validator('category')
     def validate_category(cls, v):
         allowed_categories = [
-            'data', 'IAM', 'IAC', 
-            'perimeter', 'monitoring_response', 'GOR'
+            'Sécurité data', 'Sécurité drs identités, accès et mobilité', 'Sécurité des infrastructures, applicatifs et continuité', 
+            'Security Perimeter', 'Monitoring de la sécurité et réponse aux incidents',
+            'Gouvernance sécurité organisation et ressources'
         ]
         if v not in allowed_categories:
             raise ValueError(f'Category must be one of: {", ".join(allowed_categories)}')
@@ -66,11 +67,10 @@ class ToolBase(BaseModel):
     @field_validator('type')
     def validate_type(cls, v):
         allowed_types = [
-            'firewall', 'antivirus', 'vulnerability_scanner', 
-            'waf', 'ids_ips', 'siem', 'endpoint_protection', 
-            'network_monitoring', 'log_analysis', 'other'
+            'firewall', 'antivirus', 'vulnerability scanner', 
+            'waf', 'ids_ips', 'web application scanner', 'patch management'
         ]
-        if v not in allowed_types:
+        if v.lower() not in allowed_types:
             raise ValueError(f'Type must be one of: {", ".join(allowed_types)}')
         return v
 

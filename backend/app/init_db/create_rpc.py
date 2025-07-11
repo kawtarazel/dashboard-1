@@ -47,11 +47,14 @@ def create_rpc_functions():
         """,
         """
         CREATE OR REPLACE FUNCTION public.get_successful_quarantine()
-        RETURNS nu
+        RETURNS integer
         LANGUAGE plpgsql
         AS $$
+        DECLARE
+            result integer;
         BEGIN
-            RETURN QUERY SELECT COUNT(*) FROM logs WHERE quarantine_status = 'successful' ;
+            SELECT COUNT(*) INTO result FROM logs WHERE quarantine_status = 'successful';
+            RETURN result;
         END;
         $$;
         """,

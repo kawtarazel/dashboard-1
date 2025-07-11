@@ -83,7 +83,7 @@ async def parse_file(request: ParseRequest):
             
             # Initialize appropriate parser based on tool type
             parser = None
-            if tool_info['type'] == 'vulnerability_scanner':
+            if tool_info['type'].lower() == 'vulnerability scanner':
                 # For vulnerability scanners, we need to determine the specific type
                 tool_name_lower = tool_info['name'].lower()
                 if 'nessus' in tool_name_lower:
