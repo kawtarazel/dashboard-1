@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { FileText, Clock, CheckCircle, AlertCircle, Upload, Eye, Download } from 'lucide-react';
-import api from '../../services/api';
+import api from '../services/api';
 
 const FilesPage = () => {
   const [files, setFiles] = useState([]);

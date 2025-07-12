@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LayoutGrid, Settings, Globe, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Accepts activeItem (string or number) and onSelect (function) as props
-function DashboardSidebar({ activeItem, onSelect }) {
+function DashboardSidebar({ activeItem, onSelect, is_superuser }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
@@ -41,6 +41,7 @@ function DashboardSidebar({ activeItem, onSelect }) {
       {/* Navigation Items */}
       <div className="py-4">
         {menuItems.map((item) => {
+          if (!is_superuser && item.label === "Files") return;
           const IconComponent = item.icon;
           const isActive = activeItem === item.id;
           return (

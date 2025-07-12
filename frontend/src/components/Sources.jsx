@@ -1,1058 +1,960 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import {
-    Box,
-    Typography,
-    Container,
-    Paper,
-    Tabs,
-    Tab,
-    Button,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    IconButton,
-    Chip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Grid,
-    Card,
-    CardContent,
-    Fab,
-    Tooltip,
-    Alert,
-    Snackbar,
-    CircularProgress,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Divider
-} from '@mui/material';
-import {
-    Add as AddIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    Settings as SettingsIcon,
-    Assessment as AssessmentIcon,
-    Build as BuildIcon,
-    ExpandMore as ExpandMoreIcon,
-    Save as SaveIcon,
-    Cancel as CancelIcon,
-    Lock as LockIcon,
-    Visibility as VisibilityIcon
-} from '@mui/icons-material';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Plus, Edit, Trash2, Settings, BarChart3, Shield, Eye, Lock, TrendingUp, Activity, Loader2 } from "lucide-react";
+import {dashboardApi} from "../services/dashboardApi";
+import {useAuth} from "../contexts/AuthContext";
 import { toast } from 'react-toastify';
-import { dashboardApi } from '../services/dashboardApi';
-import { useAuth } from '../contexts/AuthContext';
-
-// Tab Panel Component
-function TabPanel({ children, value, index, ...other }) {
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`settings-tabpanel-${index}`}
-            aria-labelledby={`settings-tab-${index}`}
-            {...other}
-        >
-            {value === index && (
-                <Box sx={{ p: 3 }}>
-                    {children}
-                </Box>
-            )}
-        </div>
-    );
-}
-
 // KPI Form Component
-function KPIForm({ kpi, onSave, onCancel, open }) {
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        level: '',
-        type: '',
-        target: '',
-        unit: '',
-        frequency: '',
-        formula: '',
-        reporting_format: '',
-        data_source: ''
-    });
-    const [loading, setLoading] = useState(false);
+function KPIForm({
+  kpi,
+  onSave,
+  onCancel,
+  open,
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    level: "",
+    type: "",
+    target: "",
+    unit: "",
+    frequency: "",
+    formula: "",
+    reporting_format: "",
+    data_source: "",
+  })
+  const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (kpi) {
-            setFormData(kpi);
-        } else {
-            setFormData({
-                name: '',
-                description: '',
-                level: '',
-                type: '',
-                target: '',
-                unit: '',
-                frequency: '',
-                formula: '',
-                reporting_format: '',
-                data_source: ''
-            });
-        }
-    }, [kpi, open]);
+  useEffect(() => {
+    if (kpi) {
+      setFormData(kpi)
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        level: "",
+        type: "",
+        target: "",
+        unit: "",
+        frequency: "",
+        formula: "",
+        reporting_format: "",
+        data_source: "",
+      })
+    }
+  }, [kpi, open])
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
 
-        try {
-            if (kpi?.id) {
-                await dashboardApi.updateKPI(kpi.id, formData);
-                toast.success('✅ KPI updated successfully');
-            } else {
-                await dashboardApi.createKPI(formData);
-                toast.success('✅ KPI created successfully');
-            }
-            onSave();
-        } catch (error) {
-            toast.error(`❌ ${error.response?.data?.detail || 'Error saving KPI'}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      if (kpi?.id) {
+        await dashboardApi.updateKPI(kpi.id, formData)
+        toast.success("✅ KPI updated successfully")
+      } else {
+        await dashboardApi.createKPI(formData)
+        toast.success("✅ KPI created successfully")
+      }
+      onSave()
+    } catch (error) {
+      toast.error(`❌ ${error.response?.data?.detail || "Error saving KPI"}`)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const handleChange = (field) => (event) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: event.target.value
-        }));
-    };
+  const handleChange = (field) => (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
 
-    return (
-        <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                fontWeight: 'bold'
-            }}>
-                {kpi ? 'Edit KPI' : 'Create New KPI'}
-            </DialogTitle>
-            <form onSubmit={handleSubmit}>
-                <DialogContent sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Name"
-                                value={formData.name}
-                                onChange={handleChange('name')}
-                                fullWidth
-                                required
-                                margin="normal"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth margin="normal" required>
-                                <InputLabel>Level</InputLabel>
-                                <Select
-                                    value={formData.level}
-                                    onChange={handleChange('level')}
-                                    label="Level"
-                                >
-                                    <MenuItem value="Operational">Operational</MenuItem>
-                                    <MenuItem value="Managerial">Managerial</MenuItem>
-                                    <MenuItem value="Strategic">Strategic</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Description"
-                                value={formData.description}
-                                onChange={handleChange('description')}
-                                fullWidth
-                                multiline
-                                rows={2}
-                                margin="normal"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Type"
-                                value={formData.type}
-                                onChange={handleChange('type')}
-                                fullWidth
-                                required
-                                margin="normal"
-                                placeholder="e.g., Security, Performance"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Target"
-                                value={formData.target}
-                                onChange={handleChange('target')}
-                                fullWidth
-                                required
-                                margin="normal"
-                                placeholder="e.g., > 95%, < 10"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Unit"
-                                value={formData.unit}
-                                onChange={handleChange('unit')}
-                                fullWidth
-                                margin="normal"
-                                placeholder="e.g., %, count, minutes"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth margin="normal" required>
-                                <InputLabel>Frequency</InputLabel>
-                                <Select
-                                    value={formData.frequency}
-                                    onChange={handleChange('frequency')}
-                                    label="Frequency"
-                                >
-                                    <MenuItem value="real-time">Real-time</MenuItem>
-                                    <MenuItem value="hourly">Hourly</MenuItem>
-                                    <MenuItem value="daily">Daily</MenuItem>
-                                    <MenuItem value="weekly">Weekly</MenuItem>
-                                    <MenuItem value="monthly">Monthly</MenuItem>
-                                    <MenuItem value="quarterly">Quarterly</MenuItem>
-                                    <MenuItem value="yearly">Yearly</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Data Source"
-                                value={formData.data_source}
-                                onChange={handleChange('data_source')}
-                                fullWidth
-                                margin="normal"
-                                placeholder="e.g., Fortinet, OpenVAS, F5"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Formula"
-                                value={formData.formula}
-                                onChange={handleChange('formula')}
-                                fullWidth
-                                margin="normal"
-                                placeholder="e.g., (blocked_attacks / total_requests) * 100"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Reporting Format"
-                                value={formData.reporting_format}
-                                onChange={handleChange('reporting_format')}
-                                fullWidth
-                                margin="normal"
-                                placeholder="e.g., Percentage, Count, Chart"
-                                variant="outlined"
-                            />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={onCancel} disabled={loading} variant="outlined">
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={loading}
-                        startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                        sx={{ 
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
-                            }
-                        }}
-                    >
-                        {loading ? 'Saving...' : 'Save'}
-                    </Button>
-                </DialogActions>
-            </form>
-        </Dialog>
-    );
+  return (
+    <Dialog open={open} onOpenChange={onCancel}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-slate-800">
+            {kpi ? "Edit KPI" : "Create New KPI"}
+          </DialogTitle>
+          <DialogDescription>
+            {kpi ? "Update the KPI details below." : "Fill in the details to create a new KPI."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={formData.name || ""}
+                onChange={(e) => handleChange("name")(e.target.value)}
+                placeholder="Enter KPI name"
+                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="level" className="text-sm font-medium text-slate-700">
+                Level
+              </Label>
+              <Select value={formData.level || ""} onValueChange={handleChange("level")}>
+                <SelectTrigger className="border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="operational">Operational</SelectItem>
+                  <SelectItem value="managerial">Managerial</SelectItem>
+                  <SelectItem value="strategic">Strategic</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-medium text-slate-700">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description || ""}
+              onChange={(e) => handleChange("description")(e.target.value)}
+              placeholder="Enter KPI description"
+              className="border-slate-300 focus:border-blue-500 focus:ring-blue-500 min-h-[80px]"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-sm font-medium text-slate-700">
+                Type
+              </Label>
+              <Input
+                id="type"
+                value={formData.type || ""}
+                onChange={(e) => handleChange("type")(e.target.value)}
+                placeholder="e.g., Percentage, Count"
+                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="target" className="text-sm font-medium text-slate-700">
+                Target
+              </Label>
+              <Input
+                id="target"
+                value={formData.target || ""}
+                onChange={(e) => handleChange("target")(e.target.value)}
+                placeholder="Target value"
+                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="unit" className="text-sm font-medium text-slate-700">
+                Unit
+              </Label>
+              <Input
+                id="unit"
+                value={formData.unit || ""}
+                onChange={(e) => handleChange("unit")(e.target.value)}
+                placeholder="e.g., %, hours, count"
+                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="frequency" className="text-sm font-medium text-slate-700">
+                Frequency
+              </Label>
+              <Select value={formData.frequency || ""} onValueChange={handleChange("frequency")}>
+                <SelectTrigger className="border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="real-time">Real-time</SelectItem>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="annually">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="data_source" className="text-sm font-medium text-slate-700">
+                Data Source
+              </Label>
+              <Input
+                id="data_source"
+                value={formData.data_source || ""}
+                onChange={(e) => handleChange("data_source")(e.target.value)}
+                placeholder="Data source"
+                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="formula" className="text-sm font-medium text-slate-700">
+              Formula
+            </Label>
+            <Textarea
+              id="formula"
+              value={formData.formula || ""}
+              onChange={(e) => handleChange("formula")(e.target.value)}
+              placeholder="Enter calculation formula"
+              className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save KPI"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 // Tool Form Component
-function ToolForm({ tool, onSave, onCancel, open }) {
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        type: '',
-        category: '',
-        vendor: '',
-        version: '',
-        configuration: ''
-    });
-    const [loading, setLoading] = useState(false);
+function ToolForm({
+  tool,
+  onSave,
+  onCancel,
+  open,
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    type: "",
+    category: "",
+    vendor: "",
+    version: "",
+    configuration: "",
+  })
+  const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (tool) {
-            setFormData(tool);
-        } else {
-            setFormData({
-                name: '',
-                description: '',
-                type: '',
-                category: '',
-                vendor: '',
-                version: '',
-                configuration: ''
-            });
-        }
-    }, [tool, open]);
+  useEffect(() => {
+    if (tool) {
+      setFormData(tool)
+    } else {
+      setFormData({
+        name: "",
+        description: "",
+        type: "",
+        category: "",
+        vendor: "",
+        version: "",
+        configuration: "",
+      })
+    }
+  }, [tool, open])
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
 
-        try {
-            if (tool?.id) {
-                await dashboardApi.updateTool(tool.id, formData);
-                toast.success('✅ Tool updated successfully');
-            } else {
-                await dashboardApi.createTool(formData);
-                toast.success('✅ Tool created successfully');
-            }
-            onSave();
-        } catch (error) {
-            toast.error(`❌ ${error.response?.data?.detail || 'Error saving tool'}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      if (tool?.id) {
+        await dashboardApi.updateTool(tool.id, formData)
+        toast.success("✅ Tool updated successfully")
+      } else {
+        await dashboardApi.createTool(formData)
+        toast.success("✅ Tool created successfully")
+      }
+      onSave()
+    } catch (error) {
+      toast.error(`❌ ${error.response?.data?.detail || "Error saving tool"}`)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const handleChange = (field) => (event) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: event.target.value
-        }));
-    };
+  const handleChange = (field) => (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
 
-    return (
-        <Dialog open={open} onClose={onCancel} maxWidth="md" fullWidth>
-            <DialogTitle sx={{ 
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: 'white',
-                fontWeight: 'bold'
-            }}>
-                {tool ? 'Edit Tool' : 'Create New Tool'}
-            </DialogTitle>
-            <form onSubmit={handleSubmit}>
-                <DialogContent sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Name"
-                                value={formData.name}
-                                onChange={handleChange('name')}
-                                fullWidth
-                                required
-                                margin="normal"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Vendor"
-                                value={formData.vendor}
-                                onChange={handleChange('vendor')}
-                                fullWidth
-                                margin="normal"
-                                placeholder="e.g., Fortinet, Palo Alto"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Description"
-                                value={formData.description}
-                                onChange={handleChange('description')}
-                                fullWidth
-                                multiline
-                                rows={2}
-                                margin="normal"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <FormControl fullWidth margin="normal" required>
-                                <InputLabel>Category</InputLabel>
-                                <Select
-                                    value={formData.category}
-                                    onChange={handleChange('category')}
-                                    label="Category"
-                                >
-                                    <MenuItem value="data">Data Security</MenuItem>
-                                    <MenuItem value="IAM">Identity, Access, and Mobility Security</MenuItem>
-                                    <MenuItem value="IAC">Infrastructure, Application, and Continuity Security</MenuItem>
-                                    <MenuItem value="perimeter">Perimeter Security</MenuItem>
-                                    <MenuItem value="monitoring_response">Security Monitoring and Incident Response</MenuItem>
-                                    <MenuItem value="GOR">Security Governance, Organization, and Resources</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <FormControl fullWidth margin="normal" required>
-                                <InputLabel>Type</InputLabel>
-                                <Select
-                                    value={formData.type}
-                                    onChange={handleChange('type')}
-                                    label="Type"
-                                >
-                                    <MenuItem value="firewall">Firewall</MenuItem>
-                                    <MenuItem value="antivirus">Antivirus</MenuItem>
-                                    <MenuItem value="vulnerability_scanner">Vulnerability Scanner</MenuItem>
-                                    <MenuItem value="waf">WAF</MenuItem>
-                                    <MenuItem value="ids_ips">IDS/IPS</MenuItem>
-                                    <MenuItem value="siem">SIEM</MenuItem>
-                                    <MenuItem value="endpoint_protection">Endpoint Protection</MenuItem>
-                                    <MenuItem value="network_monitoring">Network Monitoring</MenuItem>
-                                    <MenuItem value="log_analysis">Log Analysis</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Version"
-                                value={formData.version}
-                                onChange={handleChange('version')}
-                                fullWidth
-                                margin="normal"
-                                placeholder="e.g., 7.4.1, 2023.1"
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Configuration"
-                                value={formData.configuration}
-                                onChange={handleChange('configuration')}
-                                fullWidth
-                                multiline
-                                rows={3}
-                                margin="normal"
-                                placeholder="JSON configuration or setup notes"
-                                variant="outlined"
-                            />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={onCancel} disabled={loading} variant="outlined">
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={loading}
-                        startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
-                        sx={{ 
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                            }
-                        }}
-                    >
-                        {loading ? 'Saving...' : 'Save'}
-                    </Button>
-                </DialogActions>
-            </form>
-        </Dialog>
-    );
+  return (
+    <Dialog open={open} onOpenChange={onCancel}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-slate-800">
+            {tool ? "Edit Security Tool" : "Add New Security Tool"}
+          </DialogTitle>
+          <DialogDescription>
+            {tool ? "Update the tool details below." : "Fill in the details to add a new security tool."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+                Tool Name
+              </Label>
+              <Input
+                id="name"
+                value={formData.name || ""}
+                onChange={(e) => handleChange("name")(e.target.value)}
+                placeholder="Enter tool name"
+                className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-sm font-medium text-slate-700">
+                Category
+              </Label>
+              <Select value={formData.category || ""} onValueChange={handleChange("category")}>
+                <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="data">Data Security</SelectItem>
+                  <SelectItem value="IAM">Identity, Access, and Mobility Security</SelectItem>
+                  <SelectItem value="IAC">Infrastructure, Application, and Continuity Security</SelectItem>
+                  <SelectItem value="perimeter">Perimeter Security</SelectItem>
+                  <SelectItem value="monitoring_response">Security Monitoring and Incident Response</SelectItem>
+                  <SelectItem value="GOR">Security Governance, Organization, and Resources</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-medium text-slate-700">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description || ""}
+              onChange={(e) => handleChange("description")(e.target.value)}
+              placeholder="Enter tool description"
+              className="border-slate-300 focus:border-red-500 focus:ring-red-500 min-h-[80px]"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-sm font-medium text-slate-700">
+                Type
+              </Label>
+              <Select value={formData.type || ""} onValueChange={handleChange("type")}>
+                <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="firewall">Firewall</SelectItem>
+                  <SelectItem value="antivirus">Antivirus</SelectItem>
+                  <SelectItem value="vulnerability_scanner">Vulnerability Scanner</SelectItem>
+                  <SelectItem value="waf">WAF</SelectItem>
+                  <SelectItem value="ids_ips">IDS/IPS</SelectItem>
+                  <SelectItem value="siem">SIEM</SelectItem>
+                  <SelectItem value="endpoint_protection">Endpoint Protection</SelectItem>
+                  <SelectItem value="network_monitoring">Network Monitoring</SelectItem>
+                  <SelectItem value="log_analysis">Log Analysis</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="vendor" className="text-sm font-medium text-slate-700">
+                Vendor
+              </Label>
+              <Input
+                id="vendor"
+                value={formData.vendor || ""}
+                onChange={(e) => handleChange("vendor")(e.target.value)}
+                placeholder="Tool vendor"
+                className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="version" className="text-sm font-medium text-slate-700">
+              Version
+            </Label>
+            <Input
+              id="version"
+              value={formData.version || ""}
+              onChange={(e) => handleChange("version")(e.target.value)}
+              placeholder="Tool version"
+              className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="configuration" className="text-sm font-medium text-slate-700">
+              Configuration
+            </Label>
+            <Textarea
+              id="configuration"
+              value={formData.configuration || ""}
+              onChange={(e) => handleChange("configuration")(e.target.value)}
+              placeholder="Tool configuration details"
+              className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+            />
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white">
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Tool"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 // Main Sources Component
 const Sources = () => {
-    const [currentTab, setCurrentTab] = useState(0);
-    const [kpis, setKpis] = useState([]);
-    const [tools, setTools] = useState([]);
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const { user } = useAuth();
+  const [currentTab, setCurrentTab] = useState("kpis")
+  const [kpis, setKpis] = useState([])
+  const [tools, setTools] = useState([])
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
 
-    // Dialog states
-    const [kpiDialogOpen, setKpiDialogOpen] = useState(false);
-    const [toolDialogOpen, setToolDialogOpen] = useState(false);
-    const [selectedKpi, setSelectedKpi] = useState(null);
-    const [selectedTool, setSelectedTool] = useState(null);
+  // Dialog states
+  const [kpiDialogOpen, setKpiDialogOpen] = useState(false)
+  const [toolDialogOpen, setToolDialogOpen] = useState(false)
+  const [selectedKpi, setSelectedKpi] = useState(null)
+  const [selectedTool, setSelectedTool] = useState(null)
 
-    // Check if user is superuser
-    const isSuperUser = user?.is_superuser || false;
+  // Check if user is superuser
+  const isSuperUser = user?.is_superuser || false
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const [kpisRes, toolsRes, statsRes] = await Promise.all([
-                dashboardApi.getAllKPIs(),
-                dashboardApi.getAllTools(),
-                dashboardApi.getDashboardStats()
-            ]);
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      console.log("test");
+      const [kpisRes, toolsRes, statsRes] = await Promise.all([
+        dashboardApi.getAllKPIs(),
+        dashboardApi.getAllTools(),
+        dashboardApi.getDashboardStats(),
+      ])
 
-            setKpis(kpisRes);
-            setTools(toolsRes);
-            setStats(statsRes);
-        } catch (error) {
-            toast.error('❌ Failed to fetch dashboard data');
-        } finally {
-            setLoading(false);
-        }
-    };
+      setKpis(kpisRes)
+      setTools(toolsRes)
+      setStats(statsRes)
+    } catch (error) {
+      toast.error("❌ Failed to fetch dashboard data")
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const handleDeleteKpi = async (kpiId) => {
-        if (!isSuperUser) {
-            toast.error('❌ Only administrators can delete KPIs');
-            return;
-        }
-
-        if (!window.confirm('Are you sure you want to delete this KPI?')) return;
-
-        try {
-            await dashboardApi.deleteKPI(kpiId);
-            toast.success('✅ KPI deleted successfully');
-            fetchData();
-        } catch (error) {
-            toast.error(`❌ ${error.response?.data?.detail || 'Failed to delete KPI'}`);
-        }
-    };
-
-    const handleDeleteTool = async (toolId) => {
-        if (!isSuperUser) {
-            toast.error('❌ Only administrators can delete tools');
-            return;
-        }
-
-        if (!window.confirm('Are you sure you want to delete this tool?')) return;
-
-        try {
-            await dashboardApi.deleteTool(toolId);
-            toast.success('✅ Tool deleted successfully');
-            fetchData();
-        } catch (error) {
-            toast.error(`❌ ${error.response?.data?.detail || 'Failed to delete tool'}`);
-        }
-    };
-
-    const getLevelColor = (level) => {
-        const colors = {
-            operational: '#10b981',
-            managerial: '#f59e0b',
-            strategic: '#8b5cf6'
-        };
-        return colors[level?.toLowerCase()] || '#6b7280';
-    };
-
-    const getCategoryColor = (category) => {
-        const colors = {
-            data: '#ef4444',
-            IAM: '#10b981',
-            IAC: '#f59e0b',
-            perimeter: '#3b82f6',
-            monitoring_response: '#8b5cf6',
-            GOR: '#6b7280'
-        };
-        return colors[category] || '#6b7280';
-    };
-
-    const getTypeColor = (type) => {
-        const colors = {
-            firewall: '#ef4444',
-            antivirus: '#10b981',
-            vulnerability_scanner: '#f59e0b',
-            waf: '#3b82f6',
-            ids_ips: '#8b5cf6',
-            siem: '#78716c',
-            endpoint_protection: '#059669',
-            network_monitoring: '#4338ca',
-            log_analysis: '#475569',
-            other: '#6b7280'
-        };
-        return colors[type] || '#6b7280';
-    };
-
-    if (loading) {
-        return (
-            <Container maxWidth="xl" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                <CircularProgress size={60} />
-            </Container>
-        );
+  const handleDeleteKpi = async (kpiId) => {
+    if (!isSuperUser) {
+      toast.error("❌ Only administrators can delete KPIs")
+      return
     }
 
+    if (!window.confirm("Are you sure you want to delete this KPI?")) return
+
+    try {
+      await dashboardApi.deleteKPI(kpiId)
+      toast.success("✅ KPI deleted successfully")
+      fetchData()
+    } catch (error) {
+      toast.error(`❌ ${error.response?.data?.detail || "Failed to delete KPI"}`)
+    }
+  }
+
+  const handleDeleteTool = async (toolId) => {
+    if (!isSuperUser) {
+      toast.error("❌ Only administrators can delete tools")
+      return
+    }
+
+    if (!window.confirm("Are you sure you want to delete this tool?")) return
+
+    try {
+      await dashboardApi.deleteTool(toolId)
+      toast.success("✅ Tool deleted successfully")
+      fetchData()
+    } catch (error) {
+      toast.error(`❌ ${error.response?.data?.detail || "Failed to delete tool"}`)
+    }
+  }
+
+  const getLevelColor = (level) => {
+    const colors = {
+      operational: "bg-blue-100 text-blue-800 border-blue-200",
+      managerial: "bg-amber-100 text-amber-800 border-amber-200",
+      strategic: "bg-purple-100 text-purple-800 border-purple-200",
+    }
+    return colors[level?.toLowerCase()] || "bg-slate-100 text-slate-800 border-slate-200"
+  }
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      data: "bg-red-100 text-red-800 border-red-200",
+      IAM: "bg-blue-100 text-blue-800 border-blue-200",
+      IAC: "bg-amber-100 text-amber-800 border-amber-200",
+      perimeter: "bg-blue-100 text-blue-800 border-blue-200",
+      monitoring_response: "bg-purple-100 text-purple-800 border-purple-200",
+      GOR: "bg-slate-100 text-slate-800 border-slate-200",
+    }
+    return colors[category] || "bg-slate-100 text-slate-800 border-slate-200"
+  }
+
+  const getTypeColor = (type) => {
+    const colors = {
+      firewall: "bg-red-100 text-red-800 border-red-200",
+      antivirus: "bg-blue-100 text-blue-800 border-blue-200",
+      vulnerability_scanner: "bg-amber-100 text-amber-800 border-amber-200",
+      waf: "bg-blue-100 text-blue-800 border-blue-200",
+      ids_ips: "bg-purple-100 text-purple-800 border-purple-200",
+      siem: "bg-slate-100 text-slate-800 border-slate-200",
+      endpoint_protection: "bg-blue-100 text-blue-800 border-blue-200",
+      network_monitoring: "bg-blue-100 text-blue-800 border-blue-200",
+      log_analysis: "bg-slate-100 text-slate-800 border-slate-200",
+      other: "bg-slate-100 text-slate-800 border-slate-200",
+    }
+    return colors[type] || "bg-slate-100 text-slate-800 border-slate-200"
+  }
+
+  if (loading) {
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-            {/* Header */}
-            <Box sx={{ mb: 4 }}>
-                <Box sx={{ 
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    borderRadius: 3,
-                    p: 4,
-                    color: 'white',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-                }}>
-                    <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        <SettingsIcon sx={{ mr: 2 }} />
-                        Dashboard Configuration
-                    </Typography>
-                    <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                        {isSuperUser ? 'Manage KPIs, tools, and dashboard settings' : 'View KPIs, tools, and dashboard configuration'}
-                    </Typography>
-                    {!isSuperUser && (
-                        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
-                            <LockIcon sx={{ mr: 1, fontSize: 20 }} />
-                            <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                                Read-only access - Contact administrator to modify settings
-                            </Typography>
-                        </Box>
-                    )}
-                </Box>
-            </Box>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" />
+          <p className="text-slate-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
-            {/* Statistics Cards */}
-            {stats && (
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                    <Grid item xs={12} md={4}>
-                        <Card sx={{ 
-                            background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-                            border: '2px solid #3b82f6',
-                            borderRadius: 3,
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'translateY(-2px)' }
-                        }}>
-                            <CardContent>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Box>
-                                        <Typography variant="h4" fontWeight="bold" color="#1e40af">
-                                            {stats.kpis.total}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" fontWeight="medium">
-                                            Total KPIs
-                                        </Typography>
-                                    </Box>
-                                    <AssessmentIcon sx={{ fontSize: 40, color: '#3b82f6' }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Card sx={{ 
-                            background: 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
-                            border: '2px solid #10b981',
-                            borderRadius: 3,
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'translateY(-2px)' }
-                        }}>
-                            <CardContent>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Box>
-                                        <Typography variant="h4" fontWeight="bold" color="#047857">
-                                            {stats.tools.total}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" fontWeight="medium">
-                                            Total Tools
-                                        </Typography>
-                                    </Box>
-                                    <BuildIcon sx={{ fontSize: 40, color: '#10b981' }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Card sx={{ 
-                            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                            border: '2px solid #f59e0b',
-                            borderRadius: 3,
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'translateY(-2px)' }
-                        }}>
-                            <CardContent>
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Box>
-                                        <Typography variant="h4" fontWeight="bold" color="#d97706">
-                                            {stats.logs.today}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" fontWeight="medium">
-                                            Logs Today
-                                        </Typography>
-                                    </Box>
-                                    <AssessmentIcon sx={{ fontSize: 40, color: '#f59e0b' }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Settings className="w-6 h-6 text-blue-600" />
+                </div>
+                <h1 className="text-3xl font-bold text-slate-900">KPIs & Tools Dashboard</h1>
+              </div>
+              <p className="text-slate-600 text-lg">
+                {isSuperUser
+                  ? "Manage KPIs and Tools"
+                  : "View KPIs and Tools"}
+              </p>
+            </div>
+
+            {!isSuperUser && (
+              <Alert className="max-w-md border-amber-200 bg-amber-50">
+                <Lock className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800">
+                  Read-only access - Contact administrator to modify KPIs
+                </AlertDescription>
+              </Alert>
             )}
+          </div>
+        </div>
 
-            {/* Main Content */}
-            <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs
-                        value={currentTab}
-                        onChange={(e, newValue) => setCurrentTab(newValue)}
-                        aria-label="settings tabs"
-                        sx={{
-                            '& .MuiTab-root': {
-                                fontWeight: 'medium',
-                                textTransform: 'none',
-                                fontSize: '1rem'
-                            }
-                        }}
-                    >
-                        <Tab label="KPI Management" />
-                        <Tab label="Tool Management" />
-                        <Tab label="Statistics" />
-                    </Tabs>
-                </Box>
+        {/* Statistics Cards */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-slate-200 hover:shadow-md transition-shadow duration-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-slate-600">Total KPIs</CardTitle>
+                  <BarChart3 className="w-5 h-5 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-slate-900">{stats.kpis.total}</div>
+                <p className="text-sm text-slate-600 mt-1">Performance indicators</p>
+              </CardContent>
+            </Card>
 
-                {/* KPI Management Tab */}
-                <TabPanel value={currentTab} index={0}>
-                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h5" fontWeight="bold">Key Performance Indicators</Typography>
-                        {isSuperUser && (
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setSelectedKpi(null);
-                                    setKpiDialogOpen(true);
-                                }}
-                                sx={{ 
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
-                                    }
-                                }}
-                            >
-                                Add KPI
-                            </Button>
-                        )}
-                    </Box>
+            <Card className="border-slate-200 hover:shadow-md transition-shadow duration-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-slate-600">Security Tools</CardTitle>
+                  <Shield className="w-5 h-5 text-red-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-slate-900">{stats.tools.total}</div>
+                <p className="text-sm text-slate-600 mt-1">Active security tools</p>
+              </CardContent>
+            </Card>
 
-                    <TableContainer sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                        <Table>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: '#f8fafc' }}>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Name</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Level</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Type</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Target</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Frequency</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Data Source</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {kpis && kpis.map((kpi) => (
-                                    <TableRow key={kpi.id} hover sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
-                                        <TableCell>
-                                            <Box>
-                                                <Typography variant="body1" fontWeight="medium">
-                                                    {kpi.name}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {kpi.description}
-                                                </Typography>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={kpi.level}
-                                                size="small"
-                                                sx={{
-                                                    backgroundColor: getLevelColor(kpi.level),
-                                                    color: 'white',
-                                                    textTransform: 'capitalize',
-                                                    fontWeight: 'medium'
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip label={kpi.type} size="small" variant="outlined" />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography variant="body2" fontWeight="medium">
-                                                {kpi.target} {kpi.unit}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip label={kpi.frequency} size="small" variant="outlined" />
-                                        </TableCell>
-                                        <TableCell>{kpi.data_source || 'N/A'}</TableCell>
-                                        <TableCell>
-                                            {isSuperUser ? (
-                                                <>
-                                                    <Tooltip title="Edit KPI">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => {
-                                                                setSelectedKpi(kpi);
-                                                                setKpiDialogOpen(true);
-                                                            }}
-                                                            sx={{ color: '#3b82f6', '&:hover': { backgroundColor: '#eff6ff' } }}
-                                                        >
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Delete KPI">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleDeleteKpi(kpi.id)}
-                                                            sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}
-                                                        >
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </>
-                                            ) : (
-                                                <Tooltip title="View only - Contact administrator to modify">
-                                                    <IconButton size="small" disabled>
-                                                        <VisibilityIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </TabPanel>
+            <Card className="border-slate-200 hover:shadow-md transition-shadow duration-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-slate-600">Logs Today</CardTitle>
+                  <Activity className="w-5 h-5 text-slate-600" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-slate-900">{stats.logs.today.toLocaleString()}</div>
+                <p className="text-sm text-slate-600 mt-1">Log entries processed</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-                {/* Tool Management Tab */}
-                <TabPanel value={currentTab} index={1}>
-                    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h5" fontWeight="bold">Security Tools</Typography>
-                        {isSuperUser && (
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => {
-                                    setSelectedTool(null);
-                                    setToolDialogOpen(true);
-                                }}
-                                sx={{ 
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-                                    }
-                                }}
-                            >
-                                Add Tool
-                            </Button>
-                        )}
-                    </Box>
+        {/* Main Content */}
+        <Card className="border-slate-200 shadow-sm">
+          <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+            <div className="border-b border-slate-200 px-6 pt-6">
+              <TabsList className="grid w-full grid-cols-3 bg-slate-100">
+                <TabsTrigger value="kpis" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  KPIs
+                </TabsTrigger>
+                <TabsTrigger value="tools" className="data-[state=active]:bg-white data-[state=active]:text-red-600">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Security Tools
+                </TabsTrigger>
+                <TabsTrigger value="stats" className="data-[state=active]:bg-white data-[state=active]:text-slate-600">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Statistics
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-                    <TableContainer sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                        <Table>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: '#f8fafc' }}>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Name</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Category</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Type</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Vendor</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Version</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold', color: '#374151' }}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {tools && tools.map((tool) => (
-                                    <TableRow key={tool.id} hover sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
-                                        <TableCell>
-                                            <Box>
-                                                <Typography variant="body1" fontWeight="medium">
-                                                    {tool.name}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {tool.description}
-                                                </Typography>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={tool.category.replace('_', ' ')}
-                                                size="small"
-                                                sx={{
-                                                    backgroundColor: getCategoryColor(tool.category),
-                                                    color: 'white',
-                                                    textTransform: 'capitalize',
-                                                    fontWeight: 'medium'
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip 
-                                                label={tool.type.replace('_', ' ')} 
-                                                size="small" 
-                                                sx={{
-                                                    backgroundColor: getTypeColor(tool.type),
-                                                    color: 'white',
-                                                    textTransform: 'capitalize'
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{tool.vendor || 'N/A'}</TableCell>
-                                        <TableCell>{tool.version || 'N/A'}</TableCell>
-                                        <TableCell>
-                                            {isSuperUser ? (
-                                                <>
-                                                    <Tooltip title="Edit Tool">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => {
-                                                                setSelectedTool(tool);
-                                                                setToolDialogOpen(true);
-                                                            }}
-                                                            sx={{ color: '#3b82f6', '&:hover': { backgroundColor: '#eff6ff' } }}
-                                                        >
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Delete Tool">
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() => handleDeleteTool(tool.id)}
-                                                            sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}
-                                                        >
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </>
-                                            ) : (
-                                                <Tooltip title="View only - Contact administrator to modify">
-                                                    <IconButton size="small" disabled>
-                                                        <VisibilityIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </TabPanel>
+            {/* KPI Management Tab */}
+            <TabsContent value="kpis" className="p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Key Performance Indicators</h2>
+                  <p className="text-slate-600 mt-1">Manage and monitor your KPIs</p>
+                </div>
+                {isSuperUser && (
+                  <Button
+                    onClick={() => {
+                      setSelectedKpi(null)
+                      setKpiDialogOpen(true)
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add KPI
+                  </Button>
+                )}
+              </div>
 
-                {/* Statistics Tab */}
-                <TabPanel value={currentTab} index={2}>
-                    <Typography variant="h5" fontWeight="bold" gutterBottom>
-                        Dashboard Statistics
-                    </Typography>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50">
+                      <TableHead className="font-semibold text-slate-700">Name</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Level</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Type</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Target</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Frequency</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Data Source</TableHead>
+                      <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {kpis &&
+                      kpis.map((kpi) => (
+                        <TableRow key={kpi.id} className="hover:bg-slate-50 transition-colors">
+                          <TableCell>
+                            <div>
+                              <div className="font-medium text-slate-900">{kpi.name}</div>
+                              <div className="text-sm text-slate-500 mt-1">{kpi.description}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getLevelColor(kpi.level)}>{kpi.level}</Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-600">{kpi.type}</TableCell>
+                          <TableCell>
+                            <span className="font-medium text-slate-900">
+                              {kpi.target} {kpi.unit}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="border-slate-300 text-slate-600">
+                              {kpi.frequency}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-600">{kpi.data_source || "N/A"}</TableCell>
+                          <TableCell className="text-right">
+                            {isSuperUser ? (
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedKpi(kpi)
+                                    setKpiDialogOpen(true)
+                                  }}
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteKpi(kpi.id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button variant="ghost" size="sm" className="text-slate-400 cursor-not-allowed">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
 
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={6}>
-                            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
-                                <CardContent>
-                                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: '#374151' }}>
-                                        KPI Distribution by Level
-                                    </Typography>
-                                    {stats && (
-                                        <Grid container spacing={2}>
-                                            {Object.entries(stats.kpis.by_level).map(([level, count]) => (
-                                                <Grid item xs={12} key={level}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, backgroundColor: '#f8fafc', borderRadius: 2 }}>
-                                                        <Typography variant="body1" textTransform="capitalize" fontWeight="medium">
-                                                            {level} KPIs
-                                                        </Typography>
-                                                        <Chip
-                                                            label={count}
-                                                            sx={{
-                                                                backgroundColor: getLevelColor(level),
-                                                                color: 'white',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                </Grid>
-                                            ))}
-                                        </Grid>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </Grid>
+            {/* Tool Management Tab */}
+            <TabsContent value="tools" className="p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Security Tools</h2>
+                  <p className="text-slate-600 mt-1">Manage your security infrastructure</p>
+                </div>
+                {isSuperUser && (
+                  <Button
+                    onClick={() => {
+                      setSelectedTool(null)
+                      setToolDialogOpen(true)
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Tool
+                  </Button>
+                )}
+              </div>
 
-                        <Grid item xs={12} md={6}>
-                            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
-                                <CardContent>
-                                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: '#374151' }}>
-                                        Tools by Category
-                                    </Typography>
-                                    {stats && (
-                                        <Grid container spacing={2}>
-                                            {Object.entries(stats.tools.by_category).map(([category, count]) => (
-                                                <Grid item xs={12} key={category}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, backgroundColor: '#f8fafc', borderRadius: 2 }}>
-                                                        <Typography variant="body1" textTransform="capitalize" fontWeight="medium">
-                                                            {category.replace('_', ' ')}
-                                                        </Typography>
-                                                        <Chip
-                                                            label={count}
-                                                            sx={{
-                                                                backgroundColor: getCategoryColor(category),
-                                                                color: 'white',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                </Grid>
-                                            ))}
-                                        </Grid>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
-                </TabPanel>
-            </Paper>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50">
+                      <TableHead className="font-semibold text-slate-700">Name</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Category</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Type</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Vendor</TableHead>
+                      <TableHead className="font-semibold text-slate-700">Version</TableHead>
+                      <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tools &&
+                      tools.map((tool) => (
+                        <TableRow key={tool.id} className="hover:bg-slate-50 transition-colors">
+                          <TableCell>
+                            <div>
+                              <div className="font-medium text-slate-900">{tool.name}</div>
+                              <div className="text-sm text-slate-500 mt-1">{tool.description}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getCategoryColor(tool.category)}>
+                              {tool.category?.replace("_", " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getTypeColor(tool.type)}>{tool.type?.replace("_", " ")}</Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-600">{tool.vendor || "N/A"}</TableCell>
+                          <TableCell className="text-slate-600">{tool.version || "N/A"}</TableCell>
+                          <TableCell className="text-right">
+                            {isSuperUser ? (
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedTool(tool)
+                                    setToolDialogOpen(true)
+                                  }}
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteTool(tool.id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button variant="ghost" size="sm" className="text-slate-400 cursor-not-allowed">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
 
-            {/* Dialogs */}
-            <KPIForm
-                kpi={selectedKpi}
-                open={kpiDialogOpen}
-                onSave={() => {
-                    setKpiDialogOpen(false);
-                    fetchData();
-                }}
-                onCancel={() => setKpiDialogOpen(false)}
-            />
+            {/* Statistics Tab */}
+            <TabsContent value="stats" className="p-6 space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Dashboard Statistics</h2>
+                <p className="text-slate-600 mt-1">Overview of your dashboard metrics</p>
+              </div>
 
-            <ToolForm
-                tool={selectedTool}
-                open={toolDialogOpen}
-                onSave={() => {
-                    setToolDialogOpen(false);
-                    fetchData();
-                }}
-                onCancel={() => setToolDialogOpen(false)}
-            />
-        </Container>
-    );
-};
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="border-slate-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                      KPI Distribution by Level
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {stats &&
+                      Object.entries(stats.kpis.by_level).map(([level, count]) => (
+                        <div key={level} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Badge className={getLevelColor(level)}>{level}</Badge>
+                            <span className="font-medium text-slate-700">{level} KPIs</span>
+                          </div>
+                          <span className="text-xl font-bold text-slate-900">{count}</span>
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
 
-export default Sources;
+                <Card className="border-slate-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-red-600" />
+                      Tools by Category
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {stats &&
+                      Object.entries(stats.tools.by_category).map(([category, count]) => (
+                        <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Badge className={getCategoryColor(category)}>{category.replace("_", " ")}</Badge>
+                            <span className="font-medium text-slate-700">{category.replace("_", " ")}</span>
+                          </div>
+                          <span className="text-xl font-bold text-slate-900">{count}</span>
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Card>
+
+        {/* Dialogs */}
+        <KPIForm
+          kpi={selectedKpi}
+          open={kpiDialogOpen}
+          onSave={() => {
+            setKpiDialogOpen(false)
+            fetchData()
+          }}
+          onCancel={() => setKpiDialogOpen(false)}
+        />
+
+        <ToolForm
+          tool={selectedTool}
+          open={toolDialogOpen}
+          onSave={() => {
+            setToolDialogOpen(false)
+            fetchData()
+          }}
+          onCancel={() => setToolDialogOpen(false)}
+        />
+      </div>
+    </div>
+  )
+}
+
+export default Sources

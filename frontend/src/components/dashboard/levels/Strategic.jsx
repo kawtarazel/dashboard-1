@@ -1,4 +1,4 @@
-import { TrendingUp, DollarSign, Shield, CheckCircle } from 'lucide-react';
+import { TrendingUp, DollarSign } from 'lucide-react';
 
 // Composant Strategic
 const Strategic = {
@@ -6,43 +6,34 @@ const Strategic = {
     kpis: [
       { 
         title: 'Cybersecurity Budget', 
-        value: '70', 
+        value: '65', 
         unit: '%', 
-        progress: 70, 
+        progress: 65, 
+        last_calculated_date: "28-12-2024",
+        target: 60,
         icon: <DollarSign className="w-5 h-5 text-green-600" />
       },
-      { 
+      {
         title: 'Security staff trained', 
-        value: '10', 
+        value: '60', 
         unit: '%', 
-        progress: 10, 
+        progress: 60, 
+        last_calculated_date: "02-07-2025",
+        target: 80,
         icon: <TrendingUp className="w-5 h-5 text-blue-600" />
       },
-      { 
+      {
         title: 'Incident Trend', 
-        value: '18.2', 
+        value: '11.2', 
         unit: '%', 
-        progress: 10, 
+        last_calculated_date: "01-07-2025",
+        target: 'decreasing',
         icon: <TrendingUp className="w-5 h-5 text-green-600" />
-      },
-      { 
-        title: 'Innovation Index', 
-        value: '8.7', 
-        unit: '/10', 
-        progress: 87, 
-        icon: <Shield className="w-5 h-5 text-indigo-600" />
-      },
-      { 
-        title: 'Customer Satisfaction', 
-        value: '94', 
-        unit: '%', 
-        progress: 94, 
-        icon: <CheckCircle className="w-5 h-5 text-green-500" />
       }
     ],
     charts: [
-      { title: 'Strategic Objectives Timeline', type: 'line' },
-      { title: 'KPI Achievement Matrix', type: 'bar' }
+      { title: 'Incident Trend', type: 'line' },
+      { title: 'Security staff trained Trend', type: 'bar' }
     ]
   })
 };

@@ -3,7 +3,7 @@ import DashboardSidebar from './DashboardSidebar';
 import DashboardContent from './dashboard/Dashboard_KPI';
 import AdminDashboard from './admin/AdminDashboard';
 import Sources from './Sources';
-import FilesPage from './dashboard/FilesPage';
+import FilesPage from './FilesPage';
 import { useEffect, useState } from 'react';
 
 function DashboardLayout({user, loading, user_role, fetchUserRole}) {
@@ -22,7 +22,7 @@ function DashboardLayout({user, loading, user_role, fetchUserRole}) {
     <div className='flex flex-col min-h-screen'>
       <DashboardHeader setSwitch={setSwitch} setActiveItem={setActiveItem}/>
       <div className='flex flex-1'>
-        <DashboardSidebar activeItem={activeItem} onSelect={setActiveItem} />
+        <DashboardSidebar activeItem={activeItem} onSelect={setActiveItem} is_superuser={user.is_superuser} />
         <div className='flex-1'>
           {activeItem === 0 ? (
             (CanAccess === true ? 

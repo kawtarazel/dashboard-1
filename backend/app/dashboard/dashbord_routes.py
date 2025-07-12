@@ -24,7 +24,7 @@ async def get_all_kpis(
     limit: int = Query(100, le=1000),
     level: Optional[str] = Query(None, description="Filter by level: operational, managerial, strategic"),
     db: Session = Depends(get_db),
-    admin: auth_models.User = Depends(get_admin_user)
+    current_user: auth_models.User = Depends(get_current_user)
 ):
     """Get all KPIs with pagination and filtering"""
     query = db.query(models.KPI)
@@ -39,7 +39,7 @@ async def get_all_kpis(
 async def get_kpi(
     kpi_id: int,
     db: Session = Depends(get_db),
-    admin: auth_models.User = Depends(get_admin_user)
+    current_user: auth_models.User = Depends(get_current_user)
 ):
     """Get specific KPI by ID"""
     kpi = db.query(models.KPI).filter(models.KPI.id == kpi_id).first()
@@ -140,7 +140,7 @@ async def get_all_tools(
     category: Optional[str] = Query(None, description="Filter by category"),
     type: Optional[str] = Query(None, description="Filter by type"),
     db: Session = Depends(get_db),
-    admin: auth_models.User = Depends(get_admin_user)
+    admin: auth_models.User = Depends(get_current_user)
 ):
     """Get all tools with pagination and filtering"""
     query = db.query(models.Tool)
@@ -158,7 +158,7 @@ async def get_all_tools(
 async def get_tool(
     tool_id: int,
     db: Session = Depends(get_db),
-    admin: auth_models.User = Depends(get_admin_user)
+    admin: auth_models.User = Depends(get_current_user)
 ):
     """Get specific tool by ID"""
     tool = db.query(models.Tool).filter(models.Tool.id == tool_id).first()
@@ -255,7 +255,7 @@ async def delete_tool(
 @router.get("/stats")
 async def get_dashboard_stats(
     db: Session = Depends(get_db),
-    admin: auth_models.User = Depends(get_admin_user)
+    admin: auth_models.User = Depends(get_current_user)
 ):
     """Get dashboard statistics for admin"""
     

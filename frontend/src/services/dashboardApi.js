@@ -91,5 +91,9 @@ export const dashboardApi = {
   getDashboardStats: async () => {
     const response = await api.get('/api/dashboard/stats');
     return response.data;
+  },
+
+  getLogs: async () =>{
+    
   }
 };

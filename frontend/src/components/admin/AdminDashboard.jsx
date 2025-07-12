@@ -1,61 +1,41 @@
-import React, { act, useEffect, useState } from 'react';
-import api, { authApi } from '../../services/api';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
-  Container,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  IconButton,
-  Tooltip,
-  Select,
-  MenuItem,
-  Button,
-  Avatar,
   Grid,
   Card,
-  CardContent,
-  Divider,
-  TextField,
-  InputAdornment,
-  Fade,
-  Skeleton,
+  CardContent
 } from '@mui/material';
 import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Search as SearchIcon,
   People as PeopleIcon,
   AdminPanelSettings as AdminIcon,
   Verified as VerifiedIcon,
-  PersonAdd as PersonAddIcon,
-  LogoutRounded as LogoutIcon,
+  PersonAdd as PersonAddIcon
 } from '@mui/icons-material';
+import { 
+  Search, 
+  Users, 
+  Shield, 
+  CheckCircle, 
+  AlertCircle,
+  Edit2,
+  Trash2,
+  LogOut,
+  X
+} from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Autocomplete from '@mui/material/Autocomplete';
+import api, { authApi } from '../../services/api';
 
 const AdminDashboard = ({ setSwitch }) => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [popoverPerms, setPopoverPerms] = useState([]);
-  const [permDialogOpen, setPermDialogOpen] = useState(false);
-  const [permDialogUser, setPermDialogUser] = useState(null);
   const [allPermissions, setAllPermissions] = useState([]);
-  const [selectedPerms, setSelectedPerms] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState([]);
+  const [editingRoleUserId, setEditingRoleUserId] = useState(null);
   const { user: currentUser } = useAuth();
 
   const fetchUsers = async () => {
@@ -87,33 +67,49 @@ const AdminDashboard = ({ setSwitch }) => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getInitials = (email) => {
-    return email.split('@')[0].substring(0, 2).toUpperCase();
+  const handleRoleChange = async (userId, roleId) => {
+    try {
+      await authApi.assignRoleToUser(userId, Number(roleId));
+      toast.success('Role updated successfully');
+      setEditingRoleUserId(null);
+      fetchUsers();
+    } catch (err) {
+      toast.error('Failed to update role');
+    }
   };
 
-  const getStatusColor = (isVerified) => {
-    return isVerified ? '#10B981' : '#F59E0B';
-  };
-
-  const getRoleColor = (isSuperuser) => {
-    return isSuperuser ? '#8B5CF6' : '#6B7280';
+  const handlePermissionUpdate = async () => {
+    try {
+      const oldIds = new Set(selectedUser.permissions.map(p => p.id));
+      const newIds = new Set(selectedPermissions.map(p => p.id));
+      const toAdd = [...newIds].filter(id => !oldIds.has(id));
+      const toRemove = [...oldIds].filter(id => !newIds.has(id));
+      
+      for (const id of toAdd) {
+        await authApi.addPermissionToUser(selectedUser.id, id);
+      }
+      for (const id of toRemove) {
+        await authApi.removePermissionFromUser(selectedUser.id, id);
+      }
+      
+      toast.success('Permissions updated successfully');
+      setIsPermissionModalOpen(false);
+      fetchUsers();
+    } catch (err) {
+      toast.error('Failed to update permissions');
+    }
   };
 
   useEffect(() => {
     fetchUsers();
     fetchRoles();
-    // eslint-disable-next-line
-  }, []);
-
-  // Fetch all permissions once
-  useEffect(() => {
     authApi.getPermissions().then(setAllPermissions);
   }, []);
+
+  const filteredUsers = users.filter(user =>
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const statsCards = [
     {
@@ -147,47 +143,26 @@ const AdminDashboard = ({ setSwitch }) => {
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 4, ml: 0 }}>
-      <Fade in={true} timeout={800}>
-        <Box>
-          {/* Header Section */}
-          <Box sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 4,
-            p: 3,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            borderRadius: 3,
-            color: 'white',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-          }}>
-            <Box>
-              <Typography variant="h3" fontWeight="bold" gutterBottom>
-                Admin Dashboard
-              </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                Manage users, roles, and permissions
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<LogoutIcon />}
-              onClick={() => { setSwitch(false) }}
-              sx={{
-                background: 'rgba(255,255,255,0.2)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.3)',
-                }
-              }}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div className="text-white">
+              <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+              <p className="text-blue-100">Manage users, roles, and permissions</p>
+            </div>
+            <button
+              onClick={() => setSwitch(false)}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl backdrop-blur-sm border border-white/30 text-white transition-all duration-200"
             >
-              Switch to KPIs Dashboard
-            </Button>
-          </Box>
+              <LogOut className="w-5 h-5" />
+              <span>Switch to KPIs Dashboard</span>
+            </button>
+          </div>
+        </div>
 
-          {/* Stats Cards */}
+        {/* Stats Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {statsCards.map((card, index) => (
               <Grid key={index}>
@@ -222,311 +197,258 @@ const AdminDashboard = ({ setSwitch }) => {
             ))}
           </Grid>
 
-          {/* Search and Table Section */}
-          <Paper
-            elevation={0}
-            sx={{
-              borderRadius: 3,
-              border: '1px solid #E5E7EB',
-              overflow: 'hidden',
-              background: 'white'
-            }}
-          >
-            <Box sx={{ p: 3, background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5" fontWeight="bold" color="#374151">
-                  Users Management
-                </Typography>
-                <TextField
+        {/* Users Table */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Search Bar */}
+          <div className="p-6 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Users Management</h2>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
                   placeholder="Search users..."
-                  variant="outlined"
-                  size="small"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#9CA3AF' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    width: 300,
-                    '& .MuiOutlinedInput-root': {
-                      background: 'white',
-                      borderRadius: 2,
-                    }
-                  }}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-80"
                 />
-              </Box>
-            </Box>
+              </div>
+            </div>
+          </div>
 
-            <TableContainer sx={{ maxHeight: 600 }}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold', background: '#F3F4F6' }}>User</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', background: '#F3F4F6' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', background: '#F3F4F6' }}>Type</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', background: '#F3F4F6' }}>Role</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', background: '#F3F4F6' }}>Permissions</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', background: '#F3F4F6' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredUsers.map((user, index) => (
-                    <TableRow
-                      key={user.id}
-                      sx={{
-                        '&:hover': { background: '#F9FAFB' },
-                        borderBottom: index === filteredUsers.length - 1 ? 'none' : '1px solid #E5E7EB'
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              mr: 2,
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            {getInitials(user.email)}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body1" fontWeight="medium">
-                              {user.username}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {user.email}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.is_verified ? 'Verified' : 'Unverified'}
-                          sx={{
-                            background: user.is_verified ? '#D1FAE5' : '#FEF3C7',
-                            color: user.is_verified ? '#065F46' : '#92400E',
-                            fontWeight: 'medium',
-                            border: `1px solid ${getStatusColor(user.is_verified)}`
-                          }}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.is_superuser ? 'Administrator' : 'Standard User'}
-                          sx={{
-                            background: user.is_superuser ? '#EDE9FE' : '#F3F4F6',
-                            color: user.is_superuser ? '#5B21B6' : '#374151',
-                            fontWeight: 'medium',
-                            border: `1px solid ${getRoleColor(user.is_superuser)}`
-                          }}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Chip
-                            label={user.role.name}
-                            size="small"
-                            sx={{
-                              mr: 1,
-                              background: '#EBF8FF',
-                              color: '#1E40AF',
-                              border: '1px solid #3B82F6'
-                            }}
-                          />
-                          <Tooltip title="Edit Role">
-                            <IconButton
-                              size="small"
-                              onClick={() => setUsers(users => users.map(u => u.id === user.id ? { ...u, editingRole: true } : u))}
-                              sx={{
-                                color: '#6B7280',
-                                '&:hover': { color: '#3B82F6', background: '#EBF8FF' }
-                              }}
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Permissions
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-red-500 rounded-full flex items-center justify-center text-white font-medium">
+                          {user.username?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-gray-900">{user.username}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        user.is_verified 
+                          ? 'bg-green-100 text-green-800 border border-green-200' 
+                          : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                      }`}>
+                        {user.is_verified ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Verified
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            Unverified
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        user.is_superuser 
+                          ? 'bg-red-100 text-red-800 border border-red-200' 
+                          : 'bg-gray-100 text-gray-800 border border-gray-200'
+                      }`}>
+                        {user.is_superuser ? (
+                          <>
+                            <Shield className="w-3 h-3 mr-1" />
+                            Administrator
+                          </>
+                        ) : (
+                          <>
+                            <Users className="w-3 h-3 mr-1" />
+                            Standard User
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
+                        {editingRoleUserId === user.id ? (
+                          <>
+                            <select
+                              value={user.role.id}
+                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                              className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          {user.editingRole && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-                              <Select
-                                size="small"
-                                value={user.role.id}
-                                onChange={async (e) => {
-                                  try {
-                                    await authApi.assignRoleToUser(user.id, Number(e.target.value));
-                                    toast.success('Role updated successfully');
-                                    setUsers(users => users.map(u => u.id === user.id ? { ...u, editingRole: false } : u));
-                                    fetchUsers();
-                                  } catch (err) {
-                                    toast.error('Failed to update role');
-                                  }
-                                }}
-                                sx={{
-                                  minWidth: 120,
-                                  mr: 1,
-                                  background: '#fff',
-                                  borderRadius: 2,
-                                  '& .MuiSelect-select': {
-                                    py: 1
-                                  }
-                                }}
-                              >
-                                {roles.map((role) => (
-                                  <MenuItem key={role.id} value={role.id}>{role.name}</MenuItem>
-                                ))}
-                              </Select>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                sx={{
-                                  ml: 1,
-                                  minWidth: 0,
-                                  px: 2,
-                                  borderRadius: 2,
-                                  background: '#10B981',
-                                  '&:hover': { background: '#059669' }
-                                }}
-                                onClick={() => setUsers(users => users.map(u => u.id === user.id ? { ...u, editingRole: false } : u))}
-                              >
-                                Save
-                              </Button>
-                            </Box>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          {user.permissions.length === 0 ? (
-                            <Chip label="No permissions" size="small" sx={{ background: '#F3F4F6', color: '#6B7280' }} />
-                          ) : (
-                            <>
-                              {user.permissions.slice(0, 2).map((perm) => (
-                                <Chip
-                                  key={perm.id}
-                                  label={perm.name}
-                                  size="small"
-                                  sx={{ mr: 0.5, mb: 0.5, background: '#F1F5F9', color: '#0F172A' }}
-                                />
+                              {roles.map((role) => (
+                                <option key={role.id} value={role.id}>{role.name}</option>
                               ))}
-                              {user.permissions.length > 2 && (
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{ ml: 1, px: 1, minWidth: 0, fontSize: 12, borderRadius: 2 }}
-                                  onClick={(e) => {
-                                    setAnchorEl(e.currentTarget);
-                                    setPopoverPerms(user.permissions);
-                                  }}
-                                >
-                                  +{user.permissions.length - 2} more
-                                </Button>
-                              )}
-                            </>
-                          )}
-                          {/* Edit Permissions Button as Icon */}
-                          <Tooltip title="Edit Permissions">
-                            <IconButton
-                              size="small"
-                              sx={{ ml: 1, color: '#3B82F6', background: '#EFF6FF', '&:hover': { background: '#DBEAFE' } }}
-                              onClick={() => {
-                                setPermDialogUser(user);
-                                setSelectedPerms(user.permissions);
-                                setPermDialogOpen(true);
-                              }}
+                            </select>
+                            <button
+                              onClick={() => setEditingRoleUserId(null)}
+                              className="p-1 text-gray-400 hover:text-gray-600"
                             >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                        {/* Permission Dialog */}
-                        <Dialog open={permDialogOpen && permDialogUser?.id === user.id} onClose={() => setPermDialogOpen(false)} maxWidth="xs" fullWidth>
-                          <DialogTitle>Edit Permissions for {user.username}</DialogTitle>
-                          <DialogContent>
-                            <Autocomplete
-                              multiple
-                              options={allPermissions.filter(p => !user.permissions.some(up => up.id === p.id))}
-                              getOptionLabel={(option) => option.name}
-                              value={selectedPerms}
-                              onChange={(_, value) => setSelectedPerms(value)}
-                              renderInput={(params) => <TextField {...params} label="Permissions" placeholder="Select permissions" />}
-                              sx={{ mt: 2 }}
-                            />
-                          </DialogContent>
-                          <DialogActions>
-                            <Button onClick={() => setPermDialogOpen(false)} color="secondary">Cancel</Button>
-                            <Button
-                              variant="contained"
-                              onClick={async () => {
-                                // Compute added and removed permissions
-                                const oldIds = new Set(permDialogUser.permissions.map(p => p.id));
-                                const newIds = new Set(selectedPerms.map(p => p.id));
-                                const toAdd = [...newIds].filter(id => !oldIds.has(id));
-                                const toRemove = [...oldIds].filter(id => !newIds.has(id));
-                                try {
-                                  for (const id of toAdd) {
-                                    await authApi.addPermissionToUser(permDialogUser.id, id);
-                                  }
-                                  for (const id of toRemove) {
-                                    await authApi.removePermissionFromUser(permDialogUser.id, id);
-                                  }
-                                  toast.success('Permissions updated');
-                                  setPermDialogOpen(false);
-                                  fetchUsers();
-                                } catch (err) {
-                                  toast.error('Failed to update permissions');
-                                }
-                              }}
-                              color="primary"
+                              <X className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                              {user.role.name}
+                            </span>
+                            <button
+                              onClick={() => setEditingRoleUserId(user.id)}
+                              className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
                             >
-                              Save
-                            </Button>
-                          </DialogActions>
-                        </Dialog>
-                      </TableCell>
-                      <TableCell>
-                        <Tooltip title={user.id === currentUser?.id ? "You can't delete yourself" : "Delete User"}>
-                          <span>
-                            <IconButton
-                              onClick={() => handleDelete(user.id)}
-                              size="small"
-                              sx={{
-                                color: '#DC2626',
-                                '&:hover': {
-                                  background: '#FEE2E2',
-                                  color: '#B91C1C'
-                                }
-                              }}
-                              disabled={user.id === currentUser?.id}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
+                        {user.permissions.length === 0 ? (
+                          <span className="text-sm text-gray-500">No permissions</span>
+                        ) : (
+                          <>
+                            {user.permissions.slice(0, 2).map((perm) => (
+                              <span key={perm.id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
+                                {perm.name}
+                              </span>
+                            ))}
+                            {user.permissions.length > 2 && (
+                              <span className="text-xs text-gray-500">
+                                +{user.permissions.length - 2} more
+                              </span>
+                            )}
+                          </>
+                        )}
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setSelectedPermissions(user.permissions);
+                            setIsPermissionModalOpen(true);
+                          }}
+                          className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        disabled={user.id === currentUser?.id}
+                        className={`p-2 rounded-lg transition-colors ${
+                          user.id === currentUser?.id
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-red-600 hover:bg-red-50'
+                        }`}
+                        title={user.id === currentUser?.id ? "You can't delete yourself" : "Delete User"}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {filteredUsers.length === 0 && (
-            <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h6" color="text.secondary">
-                No users found matching your search criteria
-              </Typography>
-            </Box>
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">No users found matching your search criteria</p>
+            </div>
           )}
-        </Box>
-      </Fade>
-    </Container>
+        </div>
+      </div>
+
+      {/* Permission Modal */}
+      {isPermissionModalOpen && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Edit Permissions for {selectedUser.username}
+                </h3>
+                <button
+                  onClick={() => setIsPermissionModalOpen(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-2">
+                {allPermissions.map((permission) => {
+                  const isSelected = selectedPermissions.some(p => p.id === permission.id);
+                  return (
+                    <label
+                      key={permission.id}
+                      className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPermissions([...selectedPermissions, permission]);
+                          } else {
+                            setSelectedPermissions(selectedPermissions.filter(p => p.id !== permission.id));
+                          }
+                        }}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="ml-3 text-sm text-gray-700">{permission.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setIsPermissionModalOpen(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePermissionUpdate}
+                className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
