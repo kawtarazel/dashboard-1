@@ -76,7 +76,7 @@ function DashboardHeader({ setSwitch, setActiveItem }) {
                 Export Reports
               </span>
             </button>
-
+            
             {/* Upload Button with Enhanced Styling */}
             <button
               onClick={() => setIsUploadModalOpen(true)}

@@ -1,39 +1,68 @@
-import { TrendingUp, DollarSign } from 'lucide-react';
-
-// Composant Strategic
 const Strategic = {
   getDashboardData: () => ({
     kpis: [
       { 
         title: 'Cybersecurity Budget', 
-        value: '65', 
+        current_value: 65, 
+        previous_value: 56, 
         unit: '%', 
         progress: 65, 
-        last_calculated_date: "28-12-2024",
-        target: 60,
-        icon: <DollarSign className="w-5 h-5 text-green-600" />
+        last_calculated_date: "01-01-2025",
+        threshold: 60,
+        target: 'increasing',
+        icon: "dollar"
       },
       {
         title: 'Security staff trained', 
-        value: '60', 
+        current_value: 60, 
+        previous_value: 50, 
         unit: '%', 
         progress: 60, 
-        last_calculated_date: "02-07-2025",
-        target: 80,
-        icon: <TrendingUp className="w-5 h-5 text-blue-600" />
+        last_calculated_date: "01-07-2025",
+        threshold: 80,
+        target: 'increasing',
+        icon: "trending"
       },
       {
         title: 'Incident Trend', 
-        value: '11.2', 
-        unit: '%', 
+        current_value: 16, 
+        previous_value: 22, 
+        unit: 'incidents', 
         last_calculated_date: "01-07-2025",
+        threshold: 10,
         target: 'decreasing',
-        icon: <TrendingUp className="w-5 h-5 text-green-600" />
+        icon: "trending"
       }
     ],
     charts: [
-      { title: 'Incident Trend', type: 'line' },
-      { title: 'Security staff trained Trend', type: 'bar' }
+      {
+        title: 'Incident Trend',
+        threshold: 10,
+        type: 'line',
+        data: [
+          { date: '2025-01', value: 30 },
+          { date: '2025-02', value: 28 },
+          { date: '2025-03', value: 24 },
+          { date: '2025-04', value: 32 },
+          { date: '2025-05', value: 26 },
+          { date: '2025-06', value: 22 },
+          { date: '2025-07', value: 16 }
+        ]
+      },
+      {
+        title: 'Security Staff Training Trend',
+        threshold: 80,
+        type: 'bar',
+        data: [
+          { date: '2025-01', value: 40 },
+          { date: '2025-02', value: 45 },
+          { date: '2025-03', value: 50 },
+          { date: '2025-04', value: 53 },
+          { date: '2025-05', value: 58 },
+          { date: '2025-06', value: 61 },
+          { date: '2025-07', value: 65 }
+        ]
+      }
     ]
   })
 };

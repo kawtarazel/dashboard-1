@@ -1,48 +1,78 @@
-import { BarChart3, DollarSign, Users, Target, TrendingUp } from 'lucide-react';
-
-// Composant Managerial
 const Managerial = {
   getDashboardData: () => ({
     kpis: [
-      { 
-        title: 'Active Projects', 
-        value: '8', 
-        unit: '', 
-        progress: 65, 
-        icon: <BarChart3 className="w-5 h-5 text-purple-500" />
+      {
+        title: 'Number of Incidents',
+        current_value: 16,
+        previous_value: 22,
+        unit: 'incidents',
+        last_calculated_date: "01-07-2025",
+        threshold: 10,
+        target: 'decreasing',
+        icon: "bar"
       },
-      { 
-        title: 'Budget Used', 
-        value: '78', 
-        unit: '%', 
-        progress: 78, 
-        icon: <DollarSign className="w-5 h-5 text-green-500" />
+      {
+        title: 'SLA Remediation Rate',
+        current_value: 88,
+        previous_value: 92,
+        unit: '%',
+        progress: 88,
+        last_calculated_date: "01-07-2025",
+        threshold: 90,
+        target: 'increasing',
+        icon: "trending"
       },
-      { 
-        title: 'Team Members', 
-        value: '24', 
-        unit: '', 
-        progress: 90, 
-        icon: <Users className="w-5 h-5 text-blue-500" />
+      {
+        title: 'Average CVSS Score',
+        current_value: 6.4,
+        previous_value: 7.2,
+        unit: '/10',
+        last_calculated_date: "01-07-2025",
+        threshold: 5,
+        target: 'decreasing',
+        icon: "trending"
       },
-      { 
-        title: 'Milestones Met', 
-        value: '15', 
-        unit: '/18', 
-        progress: 83, 
-        icon: <Target className="w-5 h-5 text-indigo-500" />
-      },
-      { 
-        title: 'ROI', 
-        value: '145', 
-        unit: '%', 
-        progress: 100, // Cap at 100% for progress bar
-        icon: <TrendingUp className="w-5 h-5 text-green-600" />
+      {
+        title: 'Security Training',
+        current_value: 82,
+        previous_value: 68,
+        unit: '%',
+        progress: 82,
+        last_calculated_date: "01-07-2025",
+        threshold: 75,
+        target: 'increasing',
+        icon: "trending"
       }
     ],
     charts: [
-      { title: 'Project Progress Overview', type: 'line' },
-      { title: 'Resource Allocation', type: 'bar' }
+      {
+        title: 'Incident Trend',
+        threshold: 10,
+        type: 'bar',
+        data: [
+          { date: '2025-01', value: 30 },
+          { date: '2025-02', value: 28 },
+          { date: '2025-03', value: 24 },
+          { date: '2025-04', value: 32 },
+          { date: '2025-05', value: 26 },
+          { date: '2025-06', value: 22 },
+          { date: '2025-07', value: 16 }
+        ]
+      },
+      {
+        title: 'Average CVSS Score trend',
+        threshold: 5,
+        type: 'line',
+        data: [
+          { date: '2025-01', value: 8.2 },
+          { date: '2025-02', value: 7.6 },
+          { date: '2025-03', value: 7.8 },
+          { date: '2025-04', value: 7.3 },
+          { date: '2025-05', value: 6.9 },
+          { date: '2025-06', value: 7.2 },
+          { date: '2025-07', value: 6.4 }
+        ]
+      }
     ]
   })
 };

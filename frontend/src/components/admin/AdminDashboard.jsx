@@ -36,7 +36,7 @@ const AdminDashboard = ({ setSwitch }) => {
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [editingRoleUserId, setEditingRoleUserId] = useState(null);
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, fetchUserRole } = useAuth();
 
   const fetchUsers = async () => {
     try {
@@ -73,6 +73,9 @@ const AdminDashboard = ({ setSwitch }) => {
       toast.success('Role updated successfully');
       setEditingRoleUserId(null);
       fetchUsers();
+      if (userId === currentUser.id) {
+        await fetchUserRole(currentUser.id);
+      }
     } catch (err) {
       toast.error('Failed to update role');
     }
