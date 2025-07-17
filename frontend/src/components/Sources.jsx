@@ -90,20 +90,20 @@ function KPIForm({
 
   return (
     <Dialog open={open} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl border-blue-200">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-slate-800">
+          <DialogTitle className="text-2xl font-bold text-blue-700 flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-blue-500" />
             {kpi ? "Edit KPI" : "Create New KPI"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-blue-600">
             {kpi ? "Update the KPI details below." : "Fill in the details to create a new KPI."}
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="name" className="text-base font-semibold text-slate-800">
                 Name
               </Label>
               <Input
@@ -111,30 +111,28 @@ function KPIForm({
                 value={formData.name || ""}
                 onChange={(e) => handleChange("name")(e.target.value)}
                 placeholder="Enter KPI name"
-                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900"
                 required
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="level" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="level" className="text-base font-semibold text-slate-800">
                 Level
               </Label>
-              <Select value={formData.level || ""} onValueChange={handleChange("level")}>
-                <SelectTrigger className="border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+              <Select value={formData.level || ""} onValueChange={handleChange("level")}> 
+                <SelectTrigger className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900">
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="operational">Operational</SelectItem>
-                  <SelectItem value="managerial">Managerial</SelectItem>
-                  <SelectItem value="strategic">Strategic</SelectItem>
+                <SelectContent className='bg-white'>
+                  <SelectItem className='hover:bg-blue-200' value="Operational">Operational</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Managerial">Managerial</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Strategic">Strategic</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="description" className="text-base font-semibold text-slate-800">
               Description
             </Label>
             <Textarea
@@ -142,14 +140,13 @@ function KPIForm({
               value={formData.description || ""}
               onChange={(e) => handleChange("description")(e.target.value)}
               placeholder="Enter KPI description"
-              className="border-slate-300 focus:border-blue-500 focus:ring-blue-500 min-h-[80px]"
+              className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900 min-h-[80px]"
               required
             />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="type" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="type" className="text-base font-semibold text-slate-800">
                 Type
               </Label>
               <Input
@@ -157,12 +154,11 @@ function KPIForm({
                 value={formData.type || ""}
                 onChange={(e) => handleChange("type")(e.target.value)}
                 placeholder="e.g., Percentage, Count"
-                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900"
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="target" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="target" className="text-base font-semibold text-slate-800">
                 Target
               </Label>
               <Input
@@ -170,12 +166,11 @@ function KPIForm({
                 value={formData.target || ""}
                 onChange={(e) => handleChange("target")(e.target.value)}
                 placeholder="Target value"
-                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900"
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="unit" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="unit" className="text-base font-semibold text-slate-800">
                 Unit
               </Label>
               <Input
@@ -183,34 +178,32 @@ function KPIForm({
                 value={formData.unit || ""}
                 onChange={(e) => handleChange("unit")(e.target.value)}
                 placeholder="e.g., %, hours, count"
-                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900"
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="frequency" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="frequency" className="text-base font-semibold text-slate-800">
                 Frequency
               </Label>
-              <Select value={formData.frequency || ""} onValueChange={handleChange("frequency")}>
-                <SelectTrigger className="border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+              <Select value={formData.frequency || ""} onValueChange={handleChange("frequency")}> 
+                <SelectTrigger className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900">
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="real-time">Real-time</SelectItem>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="quarterly">Quarterly</SelectItem>
-                  <SelectItem value="annually">Yearly</SelectItem>
+                <SelectContent className='bg-white'>
+                  <SelectItem className='hover:bg-blue-200' value="Real-time">Real-time</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Hourly">Hourly</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Daily">Daily</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Weekly">Weekly</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Monthly">Monthly</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Quarterly">Quarterly</SelectItem>
+                  <SelectItem className='hover:bg-blue-200' value="Annually">Yearly</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="data_source" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="data_source" className="text-base font-semibold text-slate-800">
                 Data Source
               </Label>
               <Input
@@ -218,13 +211,12 @@ function KPIForm({
                 value={formData.data_source || ""}
                 onChange={(e) => handleChange("data_source")(e.target.value)}
                 placeholder="Data source"
-                className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900"
               />
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="formula" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="formula" className="text-base font-semibold text-slate-800">
               Formula
             </Label>
             <Textarea
@@ -232,16 +224,15 @@ function KPIForm({
               value={formData.formula || ""}
               onChange={(e) => handleChange("formula")(e.target.value)}
               placeholder="Enter calculation formula"
-              className="border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+              className="bg-white border border-blue-200 focus:border-blue-500 focus:ring-blue-500 text-slate-900"
             />
           </div>
-
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 mt-4 border-t border-blue-100 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+              className="border-blue-300 text-blue-700 hover:bg-blue-50 bg-transparent"
             >
               Cancel
             </Button>
@@ -325,20 +316,20 @@ function ToolForm({
 
   return (
     <Dialog open={open} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl border-red-200">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-slate-800">
+          <DialogTitle className="text-2xl font-bold text-red-700 flex items-center gap-2">
+            <Shield className="w-6 h-6 text-red-500" />
             {tool ? "Edit Security Tool" : "Add New Security Tool"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-red-600">
             {tool ? "Update the tool details below." : "Fill in the details to add a new security tool."}
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="name" className="text-base font-semibold text-slate-800">
                 Tool Name
               </Label>
               <Input
@@ -346,33 +337,31 @@ function ToolForm({
                 value={formData.name || ""}
                 onChange={(e) => handleChange("name")(e.target.value)}
                 placeholder="Enter tool name"
-                className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+                className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900"
                 required
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="category" className="text-base font-semibold text-slate-800">
                 Category
               </Label>
-              <Select value={formData.category || ""} onValueChange={handleChange("category")}>
-                <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
+              <Select value={formData.category || ""} onValueChange={handleChange("category")}> 
+                <SelectTrigger className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="data">Data Security</SelectItem>
-                  <SelectItem value="IAM">Identity, Access, and Mobility Security</SelectItem>
-                  <SelectItem value="IAC">Infrastructure, Application, and Continuity Security</SelectItem>
-                  <SelectItem value="perimeter">Perimeter Security</SelectItem>
-                  <SelectItem value="monitoring_response">Security Monitoring and Incident Response</SelectItem>
-                  <SelectItem value="GOR">Security Governance, Organization, and Resources</SelectItem>
+                <SelectContent className='bg-white'>
+                  <SelectItem className='hover:bg-red-200' value="Data Security">Data Security</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="IAM">Identity, Access, and Mobility Security</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="IAC">Infrastructure, Application, and Continuity Security</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="Perimeter Security">Perimeter Security</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="SMIR">Security Monitoring and Incident Response</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="SGOR">Security Governance, Organization, and Resources</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="description" className="text-base font-semibold text-slate-800">
               Description
             </Label>
             <Textarea
@@ -380,37 +369,33 @@ function ToolForm({
               value={formData.description || ""}
               onChange={(e) => handleChange("description")(e.target.value)}
               placeholder="Enter tool description"
-              className="border-slate-300 focus:border-red-500 focus:ring-red-500 min-h-[80px]"
+              className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900 min-h-[80px]"
               required
             />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="type" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="type" className="text-base font-semibold text-slate-800">
                 Type
               </Label>
-              <Select value={formData.type || ""} onValueChange={handleChange("type")}>
-                <SelectTrigger className="border-slate-300 focus:border-red-500 focus:ring-red-500">
+              <Select value={formData.type || ""} onValueChange={handleChange("type")}> 
+                <SelectTrigger className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="firewall">Firewall</SelectItem>
-                  <SelectItem value="antivirus">Antivirus</SelectItem>
-                  <SelectItem value="vulnerability_scanner">Vulnerability Scanner</SelectItem>
-                  <SelectItem value="waf">WAF</SelectItem>
-                  <SelectItem value="ids_ips">IDS/IPS</SelectItem>
-                  <SelectItem value="siem">SIEM</SelectItem>
-                  <SelectItem value="endpoint_protection">Endpoint Protection</SelectItem>
-                  <SelectItem value="network_monitoring">Network Monitoring</SelectItem>
-                  <SelectItem value="log_analysis">Log Analysis</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                <SelectContent className='bg-white'>
+                  <SelectItem className='hover:bg-red-200' value="Firewall">Firewall</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="Antivirus">Antivirus</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="Vulnerability Scanner">Vulnerability Scanner</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="WAF">WAF</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="SIEM">SIEM</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="Patch Management">Patch Management</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="Web Application Scanner">Web Application Scanner</SelectItem>
+                  <SelectItem className='hover:bg-red-200' value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="vendor" className="text-sm font-medium text-slate-700">
+              <Label htmlFor="vendor" className="text-base font-semibold text-slate-800">
                 Vendor
               </Label>
               <Input
@@ -418,13 +403,12 @@ function ToolForm({
                 value={formData.vendor || ""}
                 onChange={(e) => handleChange("vendor")(e.target.value)}
                 placeholder="Tool vendor"
-                className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+                className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900"
               />
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="version" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="version" className="text-base font-semibold text-slate-800">
               Version
             </Label>
             <Input
@@ -432,12 +416,11 @@ function ToolForm({
               value={formData.version || ""}
               onChange={(e) => handleChange("version")(e.target.value)}
               placeholder="Tool version"
-              className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+              className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900"
             />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="configuration" className="text-sm font-medium text-slate-700">
+            <Label htmlFor="configuration" className="text-base font-semibold text-slate-800">
               Configuration
             </Label>
             <Textarea
@@ -445,16 +428,15 @@ function ToolForm({
               value={formData.configuration || ""}
               onChange={(e) => handleChange("configuration")(e.target.value)}
               placeholder="Tool configuration details"
-              className="border-slate-300 focus:border-red-500 focus:ring-red-500"
+              className="bg-white border border-red-200 focus:border-red-500 focus:ring-red-500 text-slate-900"
             />
           </div>
-
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 mt-4 border-t border-red-100 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+              className="border-red-300 text-red-700 hover:bg-red-50 bg-transparent"
             >
               Cancel
             </Button>

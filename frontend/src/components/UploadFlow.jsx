@@ -398,7 +398,7 @@ const UploadFlow = ({ isOpen, onClose }) => {
                             </div>
 
                             {/* Next Button */}
-                            <div className="flex justify-end pt-4">
+                            <div className="flex justify-end pt-4 pb-4">
                                 <button
                                     onClick={() => setCurrentStep(2)}
                                     disabled={!selectedTool}
@@ -472,7 +472,7 @@ const UploadFlow = ({ isOpen, onClose }) => {
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex justify-between">
+                            <div className="flex justify-between pb-4">
                                 <button
                                     onClick={() => setCurrentStep(1)}
                                     className="px-6 py-3 rounded-xl font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
@@ -486,7 +486,7 @@ const UploadFlow = ({ isOpen, onClose }) => {
                                     }}
                                     disabled={!file}
                                     className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2
-                    ${file
+                                        ${file
                                             ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
                                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
                                 >

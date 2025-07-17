@@ -56,9 +56,8 @@ class ToolBase(BaseModel):
     @field_validator('category')
     def validate_category(cls, v):
         allowed_categories = [
-            'Sécurité data', 'Sécurité drs identités, accès et mobilité', 'Sécurité des infrastructures, applicatifs et continuité', 
-            'Security Perimeter', 'Monitoring de la sécurité et réponse aux incidents',
-            'Gouvernance sécurité organisation et ressources'
+            'Data Security', 'IAM', 'IAC', 
+            'Perimeter Security', 'SMIR','SGOR'
         ]
         if v not in allowed_categories:
             raise ValueError(f'Category must be one of: {", ".join(allowed_categories)}')
@@ -68,7 +67,7 @@ class ToolBase(BaseModel):
     def validate_type(cls, v):
         allowed_types = [
             'firewall', 'antivirus', 'vulnerability scanner', 
-            'waf', 'ids_ips', 'web application scanner', 'patch management'
+            'waf', 'web application scanner', 'patch management'
         ]
         if v.lower() not in allowed_types:
             raise ValueError(f'Type must be one of: {", ".join(allowed_types)}')
