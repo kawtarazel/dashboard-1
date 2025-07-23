@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Security Parser Service", version="1.0.0")
 
-DASHBOARD_SERVICE_URL = "http://backend:8000"  # Correct service name
+DASHBOARD_SERVICE_URL = "http://backend:8000"  # service name in Docker Compose
 
 from typing import List, Dict, Any
 class ParsedFinding(BaseModel):
