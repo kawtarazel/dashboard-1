@@ -13,6 +13,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const theme = createTheme({
+  // test
   palette: {
     primary: {
       main: '#1976d2',
